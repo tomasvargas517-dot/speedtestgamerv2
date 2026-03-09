@@ -11,25 +11,47 @@
             --green: #39FF14; --text: #FFFFFF; --dim: #707075; --border: #2D2D33;
         }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { display: grid; grid-template-columns: 1fr 2fr 1.2fr; gap: 20px; width: 100%; max-width: 1500px; }
-        .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; }
+        
+        /* Estructura de Columnas Corregida */
+        .container { 
+            display: grid; 
+            grid-template-columns: 1fr 1.5fr 1fr; 
+            gap: 20px; 
+            width: 100%; 
+            max-width: 1400px;
+            align-items: start;
+        }
+
+        .card { 
+            background: var(--card); 
+            border-radius: 20px; 
+            padding: 25px; 
+            border: 1px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 550px; /* Altura mínima para que no salten */
+        }
+
         .col-center { border: 2px solid var(--blue); box-shadow: 0 0 15px rgba(0, 209, 255, 0.1); text-align: center; }
-        .title { font-size: 11px; font-weight: bold; letter-spacing: 2px; color: var(--dim); margin-bottom: 15px; text-transform: uppercase; text-align: center; }
-        .main-val { font-size: 80px; font-weight: bold; line-height: 1; margin: 5px 0; text-align: center; }
-        .speed-grid { display: grid; grid-template-columns: 1fr 1fr; width: 100%; margin: 15px 0; gap: 10px; }
+        .title { font-size: 11px; font-weight: bold; letter-spacing: 2px; color: var(--dim); margin-bottom: 20px; text-transform: uppercase; text-align: center; }
+        .main-val { font-size: 80px; font-weight: bold; line-height: 1; margin: 10px 0; text-align: center; }
+        
+        .speed-grid { display: grid; grid-template-columns: 1fr 1fr; width: 100%; margin: 20px 0; gap: 10px; }
         .speed-item { text-align: center; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; border: 1px solid #222; }
         .speed-num { font-size: 32px; font-weight: bold; color: var(--blue); }
         .label { font-size: 9px; color: var(--dim); font-weight: bold; text-transform: uppercase; }
-        select, input, textarea { background: #1A1A1E; color: white; border: 1px solid var(--border); padding: 10px; border-radius: 8px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
-        .btn { background: var(--blue); color: black; border: none; border-radius: 10px; padding: 15px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; }
-        .btn:hover { background: #00B8E6; transform: scale(1.02); }
         
-        /* Sistema de Calificación */
-        .rating-box { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); display: none; }
+        select, input { background: #1A1A1E; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 15px; box-sizing: border-box; }
+        .btn { background: var(--blue); color: black; border: none; border-radius: 10px; padding: 18px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; }
+        
+        .rating-box { margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border); display: none; }
         .stars-input { color: #FFD700; font-size: 20px; cursor: pointer; margin-bottom: 10px; display: flex; justify-content: center; gap: 5px; }
 
-        .ranking-list { overflow-y: auto; max-height: 600px; padding-right: 5px; }
-        .ranking-item { background: #1A1A1E; padding: 12px; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid var(--blue); }
+        .ranking-list { overflow-y: auto; max-height: 400px; width: 100%; }
+        .ranking-item { background: #1A1A1E; padding: 12px; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid var(--blue); text-align: left; }
+
+        canvas { max-height: 100px !important; width: 100% !important; margin: 10px 0; }
+
         @media (max-width: 1000px) { .container { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -52,13 +74,13 @@
     </div>
 
     <div class="card col-center">
-        <div class="title">Network Auditor Real-Time</div>
+        <div class="title">Network Health Scanner</div>
         <div id="ispLabel" style="font-size: 11px; color: var(--blue); margin-bottom: 5px;">Detectando ISP...</div>
         <div class="main-val" id="pingDisplay">0</div>
         <div class="label">PING LOCAL (MS)</div>
         <div style="margin: 5px 0; font-size: 11px;">PÉRDIDA: <span id="lossDisplay" style="color: var(--green);">0%</span></div>
         
-        <canvas id="chart"></canvas>
+        <div style="flex-grow: 1;"><canvas id="chart"></canvas></div>
 
         <div class="speed-grid">
             <div class="speed-item">
@@ -71,15 +93,14 @@
             </div>
         </div>
 
-        <button class="btn" id="startBtn" onclick="runTest()">INICIAR ESCANEO GLOBAL</button>
+        <button class="btn" id="startBtn" onclick="runTest()">INICIAR ESCANEO</button>
 
         <div id="ratingBox" class="rating-box">
-            <div class="label" style="margin-bottom: 10px;">¡Calificá tu conexión!</div>
             <div class="stars-input" id="starRating">
                 <span onclick="setStars(1)">☆</span><span onclick="setStars(2)">☆</span><span onclick="setStars(3)">☆</span><span onclick="setStars(4)">☆</span><span onclick="setStars(5)">☆</span>
             </div>
-            <input type="text" id="userIspName" placeholder="Nombre de tu ISP (ej: Iplan, Movistar...)">
-            <button class="btn" style="background: var(--green); padding: 10px; font-size: 12px;" onclick="submitRating()">SUBIR CALIFICACIÓN</button>
+            <input type="text" id="userIspName" placeholder="Tu ISP...">
+            <button class="btn" style="background: var(--green); padding: 10px; font-size: 12px;" onclick="submitRating()">CALIFICAR</button>
         </div>
     </div>
 
@@ -123,7 +144,7 @@
         try {
             const r = await fetch('https://ipapi.co/json/');
             const d = await r.json();
-            document.getElementById('ispLabel').innerText = `${d.org} (${d.city}, ${d.country})`;
+            document.getElementById('ispLabel').innerText = `${d.org}`;
             document.getElementById('userIspName').value = d.org;
         } catch(e) { document.getElementById('ispLabel').innerText = "ISP: No detectado"; }
     }
@@ -151,7 +172,7 @@
 
     async function runTest() {
         const btn = document.getElementById('startBtn');
-        btn.disabled = true; btn.innerText = "ESCANEO EN CURSO...";
+        btn.disabled = true; btn.innerText = "ESCANEO...";
         document.getElementById('ratingBox').style.display = 'none';
 
         let lost = 0;
@@ -169,7 +190,7 @@
         }
         document.getElementById('lossDisplay').innerText = Math.round((lost/12)*100) + "%";
 
-        const dlUrl = "https://speed.cloudflare.com/__down?bytes=30000000";
+        const dlUrl = "https://speed.cloudflare.com/__down?bytes=25000000";
         const start = performance.now();
         try {
             const resp = await fetch(dlUrl, { cache: 'no-cache' });
@@ -177,7 +198,7 @@
             let bytes = 0;
             while(true) {
                 const {done, value} = await reader.read();
-                if(done || (performance.now() - start > 7000)) break;
+                if(done || (performance.now() - start > 6000)) break;
                 bytes += value.length;
                 const mbps = ((bytes * 8) / (1024 * 1024) / ((performance.now() - start) / 1000)).toFixed(1);
                 document.getElementById('downDisplay').innerText = mbps;
@@ -185,15 +206,8 @@
             document.getElementById('upDisplay').innerText = (parseFloat(document.getElementById('downDisplay').innerText) * 0.25).toFixed(1);
         } catch(e) {}
 
-        btn.disabled = false; btn.innerText = "TEST COMPLETADO";
+        btn.disabled = false; btn.innerText = "COMPLETADO";
         document.getElementById('ratingBox').style.display = 'block';
-    }
-
-    function submitRating() {
-        const name = document.getElementById('userIspName').value;
-        if(!name || selectedStars === 0) return alert("Poné el nombre de tu ISP y las estrellas.");
-        alert(`¡Gracias! Calificaste a ${name} con ${selectedStars} estrellas. Tu reporte se sumará al ranking.`);
-        document.getElementById('ratingBox').style.display = 'none';
     }
 
     function testGame() {
@@ -201,7 +215,7 @@
         if(!base) return;
         const val = base + Math.floor(Math.random() * 8);
         document.getElementById('gameDisplay').innerText = val + " ms";
-        document.getElementById('gameScore').innerText = "SCORE: " + (10 - (val/100)).toFixed(1) + "/10";
+        document.getElementById('gameScore').innerText = "SCORE: " + (10 - (val/100)).toFixed(1);
     }
 
     window.onload = () => {
@@ -212,6 +226,11 @@
             select.appendChild(opt);
         });
     };
+
+    function submitRating() {
+        alert("¡Calificación enviada!");
+        document.getElementById('ratingBox').style.display = 'none';
+    }
 </script>
 </body>
 </html>
