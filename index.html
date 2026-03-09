@@ -106,11 +106,24 @@
         .btn-primary { background: var(--accent); color: white; border: none; }
         .btn-primary:hover { background: #4b91f8; }
         
-        .ranking-list { overflow-y: auto; flex-grow: 1; height: 0; padding-right: 6px; }
-        .ranking-list::-webkit-scrollbar { width: 4px; }
-        .ranking-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        /* Listas de la Columna Derecha (Divididas en flex) */
+        .ranking-list, .status-list { 
+            overflow-y: auto; flex: 1; min-height: 0; padding-right: 6px; 
+        }
+        .ranking-list::-webkit-scrollbar, .status-list::-webkit-scrollbar { width: 4px; }
+        .ranking-list::-webkit-scrollbar-thumb, .status-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
         
         .ranking-item { background: transparent; padding: 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
+        
+        .status-item { 
+            background: transparent; padding: 12px; border-radius: 8px; 
+            margin-bottom: 8px; border: 1px solid var(--border); 
+            display: flex; justify-content: space-between; align-items: center; 
+        }
+        .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .dot-online { background-color: var(--success); box-shadow: 0 0 8px rgba(63, 185, 80, 0.4); }
+        .dot-offline { background-color: var(--danger); box-shadow: 0 0 8px rgba(248, 81, 73, 0.4); }
+        .dot-loading { background-color: var(--text-dim); }
         
         .rating-box { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border); flex-shrink: 0; display: none; }
         .stars-input { color: #fbbf24; font-size: 20px; cursor: pointer; display: flex; justify-content: center; gap: 6px; margin-bottom: 8px; }
@@ -170,12 +183,15 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="card" style="padding-bottom: 12px;">
         <div class="title">Ranking Latam</div>
         <select id="countrySelect" onchange="showRanking()">
             <option value="">País...</option>
         </select>
         <div class="ranking-list" id="rankingList"></div>
+
+        <div class="title" style="margin-top: 16px; color: var(--accent);">Server Status</div>
+        <div class="status-list" id="serverStatusList"></div>
     </div>
 </div>
 
@@ -198,6 +214,14 @@
     let selectedStars = 0;
     let currentISP = "";
     let currentCountryCode = "";
+
+    // Variable global para timeouts de red (usada en Pings y Packet Loss)
+    const fetchWithTimeout = (url, ms) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), ms);
+        return fetch(url, { signal: controller.signal, mode: 'no-cors', cache: 'no-store' })
+            .finally(() => clearTimeout(timeoutId));
+    };
 
     function initChart() {
         const ctx = document.getElementById('chart').getContext('2d');
@@ -276,6 +300,45 @@
         }
     }
 
+    // --- LÓGICA DEL SERVER STATUS ---
+    async function checkServerStatus() {
+        const servers = [
+            { name: "Steam / CS2", url: "https://store.steampowered.com/favicon.ico" },
+            { name: "Riot Games", url: "https://www.riotgames.com/favicon.ico" },
+            { name: "Discord", url: "https://discord.com/favicon.ico" },
+            { name: "AWS Cloud", url: "https://aws.amazon.com/favicon.ico" },
+            { name: "Cloudflare", url: "https://www.cloudflare.com/favicon.ico" }
+        ];
+
+        const container = document.getElementById('serverStatusList');
+        container.innerHTML = "";
+
+        servers.forEach(async (srv) => {
+            const id = srv.name.replace(/\s/g, '');
+            container.innerHTML += `
+                <div class="status-item">
+                    <div style="font-weight:700; font-size:12px; color:var(--text-bold);">${srv.name}</div>
+                    <div style="display:flex; align-items:center; font-size:10px; font-weight:700; color:var(--text-dim);">
+                        <span class="status-dot dot-loading" id="dot-${id}"></span>
+                        <span id="text-${id}">Pinging...</span>
+                    </div>
+                </div>
+            `;
+            
+            try {
+                // Timeout estricto de 2.5 segundos para considerar un servidor Offline
+                await fetchWithTimeout(srv.url + `?t=${Date.now()}`, 2500);
+                document.getElementById(`dot-${id}`).className = "status-dot dot-online";
+                document.getElementById(`text-${id}`).innerText = "ONLINE";
+                document.getElementById(`text-${id}`).style.color = "var(--success)";
+            } catch(e) {
+                document.getElementById(`dot-${id}`).className = "status-dot dot-offline";
+                document.getElementById(`text-${id}`).innerText = "OFFLINE";
+                document.getElementById(`text-${id}`).style.color = "var(--danger)";
+            }
+        });
+    }
+
     async function testGame() {
         const region = document.getElementById('gameSelect').value;
         const display = document.getElementById('gameDisplay');
@@ -288,7 +351,6 @@
         try {
             let finalPing = 0;
 
-            // CASO 1: Riot LAS (Servidor físico en Chile)
             if (region === 'las') {
                 let basePing = 999;
                 for(let i=0; i<3; i++) {
@@ -297,10 +359,8 @@
                     const lat = Math.floor(performance.now() - s);
                     if(lat < basePing) basePing = lat;
                 }
-                // Latencia Base + Tránsito físico a Santiago (28ms) + Jitter
                 finalPing = basePing + 28 + Math.floor(Math.random() * 4); 
             } 
-            // CASO 2: Nacional (Local)
             else if (region === 'local') {
                 let basePing = 999;
                 for(let i=0; i<3; i++) {
@@ -311,7 +371,6 @@
                 }
                 finalPing = basePing + Math.floor(Math.random() * 2);
             } 
-            // CASO 3: AWS (São Paulo o Miami)
             else {
                 const endpoints = {
                     'br': 'https://dynamodb.sa-east-1.amazonaws.com/', 
@@ -345,14 +404,6 @@
         }
     }
 
-    // Helper para meter timeouts estrictos en fetch (necesario para Packet Loss)
-    const fetchWithTimeout = (url, ms) => {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), ms);
-        return fetch(url, { signal: controller.signal, mode: 'no-cors', cache: 'no-store' })
-            .finally(() => clearTimeout(timeoutId));
-    };
-
     async function runTest() {
         const btn = document.getElementById('startBtn');
         btn.disabled = true; btn.innerText = "Saturando red...";
@@ -360,13 +411,12 @@
         
         let lowestPing = 999;
         let lostPackets = 0;
-        const totalPackets = 20; // Ráfaga de 20 paquetes para medir pérdida
+        const totalPackets = 20; 
 
-        // BUCLE DE PING Y PÉRDIDA DE PAQUETES
+        // BUCLE: PING Y PACKET LOSS
         for(let i=0; i<totalPackets; i++) {
             const s = performance.now();
             try {
-                // Si tarda más de 1200ms en responder, se considera un paquete perdido
                 await fetchWithTimeout('https://speed.cloudflare.com/__down?bytes=0', 1200);
                 const lat = Math.floor(performance.now() - s);
                 if(lat < lowestPing) lowestPing = lat;
@@ -376,18 +426,17 @@
                 if(chart.data.datasets[0].data.length > 20) chart.data.datasets[0].data.shift();
                 chart.update();
             } catch(e) {
-                lostPackets++; // Suma fallos por timeout o microcortes
+                lostPackets++; 
             }
             await new Promise(r => setTimeout(r, 50));
         }
 
-        // Cálculo y actualización visual de Packet Loss
         const lossPercent = Math.round((lostPackets / totalPackets) * 100);
         const lossEl = document.getElementById('lossDisplay');
         lossEl.innerText = lossPercent + "%";
         lossEl.style.color = lossPercent > 0 ? "var(--danger)" : "var(--text-dim)";
 
-        // DESCARGA MULTIHILO
+        // DESCARGA
         const concurrentConnections = 6; 
         const targetUrl = "https://speed.cloudflare.com/__down?bytes=25000000"; 
         let totalBytes = 0;
@@ -426,13 +475,15 @@
 
     function submitRating() { 
         if(selectedStars === 0) return alert("Selecciona una cantidad de estrellas primero.");
-        alert(`¡Gracias! Calificaste a ${currentISP} con ${selectedStars} estrellas. Tu voto ha sido registrado.`); 
+        alert(`¡Gracias! Calificaste a ${currentISP} con ${selectedStars} estrellas.`); 
         document.getElementById('ratingBox').style.display = 'none'; 
     }
 
     window.onload = () => {
         initChart(); 
         initNetworkData(); 
+        checkServerStatus(); // Dispara el chequeo de servidores al entrar
+
         const select = document.getElementById('countrySelect');
         Object.keys(fullData).sort().forEach(c => {
             let opt = document.createElement("option"); opt.value = c; opt.innerText = c;
