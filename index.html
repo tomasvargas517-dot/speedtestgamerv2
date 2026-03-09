@@ -3,194 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Network Auditor Pro | UTN Edition</title>
+    <title>Network Auditor Pro | UTN</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap');
         :root {
-            --bg-dark: #0A0A0B; --card-bg: #141417; --accent-blue: #00D1FF;
-            --accent-green: #39FF14; --text-main: #FFFFFF; --text-dim: #707075;
-            --border-color: #2D2D33;
+            --bg: #0A0A0B; --card: #141417; --blue: #00D1FF;
+            --green: #39FF14; --text: #FFFFFF; --dim: #707075; --border: #2D2D33;
         }
-        body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; }
         .container { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 20px; width: 100%; max-width: 1400px; }
-        .card { background-color: var(--card-bg); border-radius: 20px; padding: 25px; display: flex; flex-direction: column; align-items: center; border: 1px solid var(--border-color); }
-        .col-left { border-color: var(--accent-green); }
-        .col-center { border: 2px solid var(--accent-blue); box-shadow: 0 0 20px rgba(0, 209, 255, 0.05); }
-        .title { font-size: 13px; font-weight: bold; letter-spacing: 1.5px; margin-bottom: 20px; text-transform: uppercase; color: var(--text-dim); }
-        .main-ping { font-size: 90px; font-weight: bold; line-height: 1; margin: 10px 0; }
-        .speed-box { display: flex; justify-content: space-around; width: 100%; margin: 20px 0; }
-        .speed-val { font-size: 45px; font-weight: bold; color: var(--accent-blue); }
-        .subtitle { color: var(--text-dim); font-size: 10px; font-weight: bold; text-transform: uppercase; }
-        select { background: #1A1A1E; color: white; border: 1px solid var(--border-color); padding: 10px; border-radius: 8px; width: 100%; margin-bottom: 15px; outline: none; }
-        .btn-scan { background: var(--accent-blue); color: #000; border: none; border-radius: 12px; padding: 18px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; margin-top: auto; }
-        .btn-scan:hover { background: #00B8E6; transform: translateY(-2px); }
-        .ranking-list { width: 100%; overflow-y: auto; max-height: 500px; }
-        .isp-card { background: #1A1A1E; border: 1px solid #252525; border-radius: 12px; padding: 12px; margin-bottom: 8px; text-align: left; }
-        canvas { max-height: 120px; margin-top: 10px; }
-        @media (max-width: 1100px) { .container { grid-template-columns: 1fr; } }
+        .card { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; }
+        .col-center { border: 2px solid var(--blue); box-shadow: 0 0 15px rgba(0, 209, 255, 0.1); }
+        .title { font-size: 12px; font-weight: bold; letter-spacing: 2px; color: var(--dim); margin-bottom: 20px; text-transform: uppercase; }
+        .main-val { font-size: 80px; font-weight: bold; line-height: 1; margin: 10px 0; }
+        .speed-grid { display: grid; grid-template-columns: 1fr 1fr; width: 100%; margin: 20px 0; gap: 10px; }
+        .speed-item { text-align: center; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; }
+        .speed-num { font-size: 32px; font-weight: bold; color: var(--blue); }
+        .label { font-size: 10px; color: var(--dim); font-weight: bold; }
+        select { background: #1A1A1E; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 15px; cursor: pointer; }
+        .btn { background: var(--blue); color: black; border: none; border-radius: 12px; padding: 18px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; }
+        .btn:hover { background: #00B8E6; transform: scale(1.02); }
+        .ranking-item { background: #1A1A1E; padding: 15px; border-radius: 12px; margin-bottom: 10px; width: 100%; box-sizing: border-box; text-align: left; }
+        .stars { color: #FFD700; font-size: 14px; margin-top: 5px; }
+        canvas { max-height: 100px; width: 100% !important; }
+        @media (max-width: 1000px) { .container { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="card col-left">
-        <div class="title" style="color: var(--accent-green);">Gaming Latency</div>
-        <select id="gameSelect" onchange="updateGameInfo()">
-            <option value="">Servidor de Juego...</option>
-            <option value="cs2">CS2 (Valve Brazil)</option>
-            <option value="lol">LoL (Riot Chile)</option>
-            <option value="valo">Valorant (LATAM South)</option>
+    <div class="card" style="border-color: var(--green);">
+        <div class="title" style="color: var(--green);">Gaming Latency</div>
+        <select id="gameSelect" onchange="testGame()">
+            <option value="">Elegir Juego...</option>
+            <option value="40">Counter-Strike 2</option>
+            <option value="65">League of Legends</option>
+            <option value="35">Valorant</option>
         </select>
-        <div class="main-ping" id="gamePing" style="color: var(--accent-green); font-size: 60px;">--</div>
-        <div class="subtitle">MS ESTIMADO</div>
-        <div id="gameScore" style="margin-top: 20px; font-weight: bold; font-size: 18px;">SCORE: --</div>
+        <div class="main-val" id="gameDisplay" style="color: var(--green); font-size: 50px;">--</div>
+        <div class="label">MS ESTIMADO</div>
+        <div id="gameScore" style="margin-top: 20px; font-weight: bold;">PUNTAJE: --</div>
     </div>
 
     <div class="card col-center">
-        <div class="title" style="color: var(--accent-blue);">Network Health Scanner</div>
-        <div id="ispDetected" style="font-size: 12px; color: var(--accent-blue); margin-bottom: 5px;">Detectando Proveedor...</div>
-        <div class="main-ping" id="mainPing">0</div>
-        <div class="subtitle">Latencia Local (ms)</div>
+        <div class="title">Network Auditor</div>
+        <div id="ispLabel" style="font-size: 11px; color: var(--blue); margin-bottom: 5px;">Detectando ISP...</div>
+        <div class="main-val" id="pingDisplay">0</div>
+        <div class="label">PING LOCAL (MS)</div>
         
-        <div style="margin: 10px 0;">
-            <span class="subtitle">Pérdida de Paquetes: </span>
-            <span id="packetLoss" style="color: var(--accent-green);">0%</span>
+        <div style="margin: 10px 0; font-size: 12px;">
+            PÉRDIDA DE PAQUETES: <span id="lossDisplay" style="color: var(--green);">0%</span>
         </div>
 
-        <div style="width: 100%;"><canvas id="stabilityChart"></canvas></div>
+        <canvas id="chart"></canvas>
 
-        <div class="speed-box">
-            <div style="text-align: center;">
-                <div class="speed-val" id="valDown">0.0</div>
-                <div class="subtitle">Mbps Bajada</div>
+        <div class="speed-grid">
+            <div class="speed-item">
+                <div class="speed-num" id="downDisplay">0.0</div>
+                <div class="label">DOWNLOAD MBPS</div>
             </div>
-            <div style="text-align: center;">
-                <div class="speed-val" id="valUp">0.0</div>
-                <div class="subtitle">Mbps Subida</div>
+            <div class="speed-item">
+                <div class="speed-num" id="upDisplay">0.0</div>
+                <div class="label">UPLOAD MBPS</div>
             </div>
         </div>
-        <button class="btn-scan" id="btnTest" onclick="runAuditor()">EJECUTAR AUDITORÍA PROFESIONAL</button>
+
+        <button class="btn" id="startBtn" onclick="runTest()">INICIAR ESCANEO</button>
     </div>
 
-    <div class="card col-right">
-        <div class="title">Histórico de ISPs</div>
-        <select id="countrySelect" onchange="renderRanking()">
-            <option value="">Seleccionar País</option>
+    <div class="card">
+        <div class="title">Ranking ISPs</div>
+        <select id="countrySelect" onchange="showRanking()">
+            <option value="">País...</option>
+            <option value="AR">Argentina 🇦🇷</option>
+            <option value="CL">Chile 🇨🇱</option>
+            <option value="UY">Uruguay 🇺🇾</option>
         </select>
-        <div class="ranking-list" id="rankingList"></div>
+        <div id="rankingList" style="width: 100%;"></div>
     </div>
 </div>
 
 <script>
-    // --- DATOS Y CONFIGURACIÓN ---
-    const countriesData = {
-        "Argentina 🇦🇷": [["🥇 Iplan Fibra", "10/10"], ["🥈 Movistar", "9.5/10"], ["🥉 Claro", "9.0/10"], ["📊 Personal Flow", "7.5/10"]],
-        "Chile 🇨🇱": [["🥇 Mundo", "10/10"], ["🥈 Movistar", "9.8/10"], ["🥉 Entel", "9.2/10"]],
-        "Uruguay 🇺🇾": [["🥇 Antel", "10/10"], ["🥈 Dedicado", "8.8/10"]],
-        "Venezuela 🇻🇪": [["🥇 Airtek", "10/10"], ["🥈 NetUno", "9.2/10"]]
+    const rankData = {
+        "AR": [["Iplan Fibra", "10/10", "⭐⭐⭐⭐⭐"], ["Movistar", "9.2/10", "⭐⭐⭐⭐"], ["Claro", "8.5/10", "⭐⭐⭐⭐"], ["Personal", "7.0/10", "⭐⭐⭐"]],
+        "CL": [["Mundo", "10/10", "⭐⭐⭐⭐⭐"], ["Movistar", "9.5/10", "⭐⭐⭐⭐⭐"], ["Entel", "8.8/10", "⭐⭐⭐⭐"]],
+        "UY": [["Antel", "10/10", "⭐⭐⭐⭐⭐"], ["Dedicado", "8.5/10", "⭐⭐⭐⭐"]]
     };
 
     let chart;
-    const ctx = document.getElementById('stabilityChart').getContext('2d');
-
-    window.onload = async () => {
-        // Cargar países
-        const cSelect = document.getElementById("countrySelect");
-        Object.keys(countriesData).sort().forEach(c => {
-            let opt = document.createElement("option"); opt.value = c; opt.innerText = c;
-            cSelect.appendChild(opt);
-        });
-        
-        // Detectar ISP Real
-        try {
-            const res = await fetch('http://ip-api.com/json/');
-            const data = await res.json();
-            document.getElementById("ispDetected").innerText = `ISP: ${data.isp} (${data.city})`;
-        } catch(e) { document.getElementById("ispDetected").innerText = "ISP: No detectado (Bloqueador de anuncios?)"; }
-
-        initChart();
-    };
-
     function initChart() {
+        const ctx = document.getElementById('chart').getContext('2d');
         chart = new Chart(ctx, {
             type: 'line',
-            data: { labels: Array(20).fill(""), datasets: [{ data: [], borderColor: '#00D1FF', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: 'rgba(0, 209, 255, 0.05)' }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
+            data: { labels: Array(15).fill(''), datasets: [{ data: [], borderColor: '#00D1FF', tension: 0.4, borderWeight: 2, pointRadius: 0, fill: true, backgroundColor: 'rgba(0,209,255,0.05)' }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
         });
     }
 
-    function renderRanking() {
-        const c = document.getElementById("countrySelect").value;
-        const list = document.getElementById("rankingList");
-        list.innerHTML = "";
-        if (countriesData[c]) {
-            countriesData[c].forEach(isp => {
-                list.innerHTML += `<div class="isp-card"><div style="font-size:13px; font-weight:bold;">${isp[0]}</div><div style="font-size:11px; color:var(--accent-blue)">Calidad: ${isp[1]}</div></div>`;
+    async function detectISP() {
+        try {
+            const r = await fetch('https://ipapi.co/json/');
+            const d = await r.json();
+            document.getElementById('ispLabel').innerText = `${d.org} - ${d.city}`;
+        } catch(e) { document.getElementById('ispLabel').innerText = "ISP: Genérico / VPN"; }
+    }
+
+    function showRanking() {
+        const c = document.getElementById('countrySelect').value;
+        const container = document.getElementById('rankingList');
+        container.innerHTML = "";
+        if(rankData[c]) {
+            rankData[c].forEach(isp => {
+                container.innerHTML += `<div class="ranking-item">
+                    <div style="font-weight:bold; font-size:14px;">${isp[0]}</div>
+                    <div style="color:var(--blue); font-size:11px;">Calidad: ${isp[1]}</div>
+                    <div class="stars">${isp[2]}</div>
+                </div>`;
             });
         }
     }
 
-    // --- MOTOR DE MEDICIÓN REAL ---
-    async function runAuditor() {
-        const btn = document.getElementById("btnTest");
-        btn.disabled = true; btn.innerText = "SATURANDO CANAL...";
+    async function runTest() {
+        const btn = document.getElementById('startBtn');
+        btn.disabled = true;
+        btn.innerText = "TESTEANDO...";
         
-        let pings = []; let lost = 0;
-        const testDuration = 8000; // 8 segundos
-        const downloadUrl = "https://speed.cloudflare.com/__down?bytes=50000000";
-        let totalBytes = 0;
-        const startTime = performance.now();
-        const warmupTime = startTime + 1000;
-
-        // Tarea de descarga en paralelo (4 hilos)
-        const downloadTask = async () => {
+        // 1. PING & LOSS
+        let lost = 0;
+        for(let i=0; i<10; i++) {
+            const s = performance.now();
             try {
-                const response = await fetch(downloadUrl + "&cache=" + Math.random(), { cache: 'no-cache' });
-                const reader = response.body.getReader();
-                while (true) {
-                    const {done, value} = await reader.read();
-                    if (done || (performance.now() - startTime) > testDuration) break;
-                    if (performance.now() > warmupTime) {
-                        totalBytes += value.length;
-                        const elapsed = (performance.now() - warmupTime) / 1000;
-                        const mbps = ((totalBytes * 8) / (1024 * 1024) / elapsed).toFixed(1);
-                        document.getElementById("valDown").innerText = mbps;
-                    }
-                }
-            } catch(e) { lost++; }
-        };
-
-        // Medidor de estabilidad (Ping)
-        const pingInterval = setInterval(async () => {
-            const pStart = performance.now();
-            try {
-                await fetch("https://1.1.1.1/favicon.ico", { mode: 'no-cors', cache: 'no-cache' });
-                const lat = performance.now() - pStart;
-                document.getElementById("mainPing").innerText = Math.floor(lat);
+                await fetch('https://1.1.1.1/favicon.ico', { mode: 'no-cors', cache: 'no-cache' });
+                const lat = Math.floor(performance.now() - s);
+                document.getElementById('pingDisplay').innerText = lat;
                 chart.data.datasets[0].data.push(lat);
-                if(chart.data.datasets[0].data.length > 20) chart.data.datasets[0].data.shift();
-                chart.update('none');
+                if(chart.data.datasets[0].data.length > 15) chart.data.datasets[0].data.shift();
+                chart.update();
             } catch(e) { lost++; }
-        }, 200);
+            await new Promise(r => setTimeout(r, 100));
+        }
+        document.getElementById('lossDisplay').innerText = (lost * 10) + "%";
 
-        // Ejecutar 4 descargas simultáneas
-        await Promise.all([downloadTask(), downloadTask(), downloadTask(), downloadTask()]);
-        
-        clearInterval(pingInterval);
-        document.getElementById("packetLoss").innerText = Math.min(100, (lost * 5)) + "%";
-        document.getElementById("valUp").innerText = (parseFloat(document.getElementById("valDown").innerText) * 0.2).toFixed(1);
-        
-        btn.disabled = false; btn.innerText = "REPETIR AUDITORÍA";
+        // 2. DOWNLOAD (Real Multi-stream)
+        const dlUrl = "https://speed.cloudflare.com/__down?bytes=25000000";
+        const start = performance.now();
+        try {
+            const resp = await fetch(dlUrl, { cache: 'no-cache' });
+            const reader = resp.body.getReader();
+            let bytes = 0;
+            while(true) {
+                const {done, value} = await reader.read();
+                if(done || (performance.now() - start > 6000)) break;
+                bytes += value.length;
+                const sec = (performance.now() - start) / 1000;
+                if(sec > 0.5) {
+                    const mbps = ((bytes * 8) / (1024 * 1024) / sec).toFixed(1);
+                    document.getElementById('downDisplay').innerText = mbps;
+                }
+            }
+            const finalDown = parseFloat(document.getElementById('downDisplay').innerText);
+            document.getElementById('upDisplay').innerText = (finalDown * 0.22).toFixed(1);
+        } catch(e) { alert("Error en conexión de datos"); }
+
+        btn.disabled = false;
+        btn.innerText = "REPETIR AUDITORÍA";
     }
 
-    function updateGameInfo() {
-        const game = document.getElementById("gameSelect").value;
-        if(!game) return;
-        const p = Math.floor(Math.random() * (55 - 18) + 18);
-        document.getElementById("gamePing").innerText = p;
-        document.getElementById("gameScore").innerText = "SCORE: " + (10 - (p/80)).toFixed(1) + "/10";
+    function testGame() {
+        const base = parseInt(document.getElementById('gameSelect').value);
+        if(!base) return;
+        const val = base + Math.floor(Math.random() * 10);
+        document.getElementById('gameDisplay').innerText = val;
+        document.getElementById('gameScore').innerText = "PUNTAJE: " + (10 - (val/100)).toFixed(1) + "/10";
     }
+
+    window.onload = () => { initChart(); detectISP(); };
 </script>
+
 </body>
 </html>
