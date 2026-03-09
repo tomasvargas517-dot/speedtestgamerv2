@@ -199,10 +199,11 @@
         }
     }
 
-    async function runTest() {
+async function runTest() {
         const btn = document.getElementById('startBtn');
         btn.disabled = true; btn.innerText = "ESCANEO...";
         
+        // Ping Loop (10 muestras)
         for(let i=0; i<10; i++) {
             const s = performance.now();
             try {
@@ -216,18 +217,22 @@
             await new Promise(r => setTimeout(r, 100));
         }
 
+        // Test de Bajada Extendida (100MB y 12 segundos)
         const start = performance.now();
         try {
-            const resp = await fetch("https://speed.cloudflare.com/__down?bytes=20000000", { cache: 'no-cache' });
+            // Aumentamos el payload a 100MB para que no termine rápido
+            const resp = await fetch("https://speed.cloudflare.com/__down?bytes=100000000", { cache: 'no-cache' });
             const reader = resp.body.getReader();
             let bytes = 0;
             while(true) {
                 const {done, value} = await reader.read();
-                if(done || (performance.now() - start > 5000)) break;
+                // Aumentamos el límite de corte a 12000 ms (12 segundos)
+                if(done || (performance.now() - start > 12000)) break;
                 bytes += value.length;
                 const mbps = ((bytes * 8) / (1024 * 1024) / ((performance.now() - start) / 1000)).toFixed(1);
                 document.getElementById('downDisplay').innerText = mbps;
             }
+            // Estimación de subida
             document.getElementById('upDisplay').innerText = (parseFloat(document.getElementById('downDisplay').innerText) * 0.2).toFixed(1);
         } catch(e) {}
 
@@ -265,3 +270,4 @@
 </script>
 </body>
 </html>
+
