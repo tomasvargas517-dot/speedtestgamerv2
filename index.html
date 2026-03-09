@@ -128,6 +128,15 @@
         .stars-input { color: #fbbf24; font-size: 20px; cursor: pointer; display: flex; justify-content: center; gap: 6px; margin-bottom: 8px; }
         .locked-isp { font-size: 14px; font-weight: 700; color: var(--accent); text-align: center; margin-bottom: 8px; }
         
+        /* Estilo para el texto de Beta */
+        .beta-tag {
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--text-dim);
+            text-transform: none;
+            margin-left: 6px;
+        }
+
         @media (max-width: 1000px) { 
             body { overflow: auto; height: auto; display: block; padding: 8px; } 
             .container { grid-template-columns: 1fr; height: auto; padding: 0; } 
@@ -139,12 +148,12 @@
 
 <div class="container">
     <div class="card">
-        <div class="title" style="color: var(--success);">Gaming Latency</div>
+        <div class="title" style="color: var(--success);">Gaming Latency <span class="beta-tag">(Sección en Beta - Medida Estimada)</span></div>
         <select id="gameSelect" onchange="testGame()">
             <option value="">Detectando región...</option>
         </select>
         <div class="main-val" id="gameDisplay" style="color: var(--success); text-align: left; padding-left: 8px;">--</div>
-        <div class="label" style="text-align: left; padding-left: 8px;">MS REAL (RTT FÍSICO)</div>
+        <div class="label" style="text-align: left; padding-left: 8px;">MS ESTIMADO (RTT FÍSICO)</div>
         <div id="gameScore" style="margin-top: auto; font-weight: 700; text-align: left; padding-left: 8px; font-size: 16px; color: var(--text-bold);">SCORE: --</div>
     </div>
 
@@ -299,7 +308,6 @@
     }
 
     async function checkServerStatus() {
-        // Añadidos los servidores de Meta
         const servers = [
             { name: "Steam / CS2", url: "https://store.steampowered.com/favicon.ico" },
             { name: "Riot Games", url: "https://www.riotgames.com/favicon.ico" },
@@ -359,7 +367,6 @@
                     const lat = Math.floor(performance.now() - s);
                     if(lat < basePing) basePing = lat;
                 }
-                // Ajuste corregido para el ruteo interno
                 finalPing = basePing + 18 + Math.floor(Math.random() * 4); 
             } 
             else if (region === 'local') {
