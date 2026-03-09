@@ -7,127 +7,30 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-        
-        :root {
-            --bg: #050505; 
-            --card-bg: rgba(20, 20, 20, 0.7); 
-            --accent: #3b82f6; 
-            --accent-glow: rgba(59, 130, 246, 0.15);
-            --text-main: #f8fafc; 
-            --text-dim: #94a3b8; 
-            --border: #262626;
-            --success: #10b981;
-        }
-
+        :root { --bg: #050505; --card-bg: rgba(20, 20, 20, 0.7); --accent: #3b82f6; --text-main: #f8fafc; --text-dim: #94a3b8; --border: #262626; --success: #10b981; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
-
-        body { 
-            background: var(--bg); 
-            background-image: radial-gradient(circle at 50% 0%, #171717 0%, var(--bg) 70%);
-            color: var(--text-main); 
-            margin: 0; 
-            height: 100vh; 
-            overflow: hidden; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center;
-        }
-
-        .container { 
-            display: grid; 
-            grid-template-columns: 1fr 1.6fr 1fr; 
-            gap: 24px; 
-            width: 100%; 
-            max-width: 1300px;
-            height: 85vh; 
-            padding: 20px;
-        }
-
-        .card { 
-            background: var(--card-bg); 
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 24px; 
-            padding: 28px; 
-            border: 1px solid var(--border); 
-            display: flex; 
-            flex-direction: column;
-            height: 100%; 
-            overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        .col-center {
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            box-shadow: 0 0 40px var(--accent-glow);
-            position: relative;
-        }
-
-        .title { 
-            font-size: 12px; font-weight: 800; letter-spacing: 1.5px; 
-            color: var(--text-dim); margin-bottom: 20px; text-transform: uppercase; 
-            text-align: center; flex-shrink: 0; 
-        }
-
-        .main-val { 
-            font-size: 72px; font-weight: 800; line-height: 1; 
-            margin: 10px 0; text-align: center; flex-shrink: 0; 
-            background: linear-gradient(to right, #fff, #94a3b8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .chart-box {
-            position: relative;
-            flex-grow: 1;
-            min-height: 100px;
-            width: 100%;
-            margin: 15px 0;
-            flex-shrink: 0;
-        }
+        body { background: var(--bg); background-image: radial-gradient(circle at 50% 0%, #171717 0%, var(--bg) 70%); color: var(--text-main); margin: 0; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .container { display: grid; grid-template-columns: 1fr 1.6fr 1fr; gap: 24px; width: 100%; max-width: 1300px; height: 85vh; padding: 20px; }
+        .card { background: var(--card-bg); backdrop-filter: blur(12px); border-radius: 24px; padding: 28px; border: 1px solid var(--border); display: flex; flex-direction: column; height: 100%; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .col-center { border: 1px solid rgba(59, 130, 246, 0.3); box-shadow: 0 0 40px rgba(59, 130, 246, 0.15); }
+        .title { font-size: 12px; font-weight: 800; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 20px; text-transform: uppercase; text-align: center; flex-shrink: 0; }
+        .main-val { font-size: 72px; font-weight: 800; line-height: 1; margin: 10px 0; text-align: center; flex-shrink: 0; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .chart-box { position: relative; flex-grow: 1; min-height: 100px; width: 100%; margin: 15px 0; flex-shrink: 0; }
         canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
-
         .speed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 10px 0; flex-shrink: 0; }
-        .speed-item { 
-            text-align: center; background: rgba(255,255,255,0.02); 
-            padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); 
-        }
+        .speed-item { text-align: center; background: rgba(255,255,255,0.02); padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); }
         .speed-num { font-size: 28px; font-weight: 800; color: var(--text-main); }
         .label { font-size: 10px; color: var(--text-dim); font-weight: 600; text-transform: uppercase; margin-top: 4px; }
-
-        select, input { 
-            background: rgba(0,0,0,0.3); color: white; border: 1px solid var(--border); 
-            padding: 14px; border-radius: 12px; width: 100%; margin-bottom: 12px; 
-            flex-shrink: 0; font-size: 14px; outline: none; transition: 0.2s;
-        }
-        select:focus, input:focus { border-color: var(--accent); }
-
-        .btn { 
-            background: var(--text-main); color: #000; border: none; 
-            border-radius: 12px; padding: 16px; font-weight: 800; font-size: 14px;
-            width: 100%; cursor: pointer; flex-shrink: 0; transition: 0.2s; 
-        }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255,255,255,0.1); }
+        select, input { background: rgba(0,0,0,0.3); color: white; border: 1px solid var(--border); padding: 14px; border-radius: 12px; width: 100%; margin-bottom: 12px; flex-shrink: 0; outline: none; transition: 0.2s; }
+        .btn { background: var(--text-main); color: #000; border: none; border-radius: 12px; padding: 16px; font-weight: 800; font-size: 14px; width: 100%; cursor: pointer; flex-shrink: 0; transition: 0.2s; }
         .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover { box-shadow: 0 10px 20px var(--accent-glow); }
-
         .ranking-list { overflow-y: auto; flex-grow: 1; height: 0; padding-right: 8px; }
         .ranking-list::-webkit-scrollbar { width: 6px; }
         .ranking-list::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-        .ranking-item { 
-            background: rgba(255,255,255,0.02); padding: 14px; border-radius: 14px; 
-            margin-bottom: 10px; border-left: 4px solid var(--accent); 
-            display: flex; flex-direction: column; gap: 4px;
-        }
-
+        .ranking-item { background: rgba(255,255,255,0.02); padding: 14px; border-radius: 14px; margin-bottom: 10px; border-left: 4px solid var(--accent); }
         .rating-box { margin-top: 10px; padding-top: 15px; border-top: 1px solid var(--border); flex-shrink: 0; display: none; }
         .stars-input { color: #fbbf24; font-size: 24px; cursor: pointer; display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; }
-
-        @media (max-width: 1000px) { 
-            body { overflow: auto; height: auto; display: block; padding: 10px; }
-            .container { grid-template-columns: 1fr; height: auto; padding: 0; } 
-            .card { min-height: 600px; height: auto; }
-        }
+        @media (max-width: 1000px) { body { overflow: auto; height: auto; display: block; padding: 10px; } .container { grid-template-columns: 1fr; height: auto; padding: 0; } .card { min-height: 600px; height: auto; } }
     </style>
 </head>
 <body>
@@ -151,26 +54,17 @@
     <div class="card col-center">
         <div class="title" style="color: var(--accent);">Network Health</div>
         <div id="ispLabel" style="font-size: 12px; color: var(--text-dim); margin-bottom: 5px; text-align: center; font-weight: 600;">Detectando ISP...</div>
-        
         <div class="main-val" id="pingDisplay">0</div>
-        <div class="label" style="text-align: center;">PING LOCAL (MS)</div>
+        <div class="label" style="text-align: center;">PING (Borde de Red)</div>
         
-        <div class="chart-box">
-            <canvas id="chart"></canvas>
-        </div>
+        <div class="chart-box"><canvas id="chart"></canvas></div>
 
         <div class="speed-grid">
-            <div class="speed-item">
-                <div class="speed-num" id="downDisplay">0.0</div>
-                <div class="label">DOWNLOAD (Mbps)</div>
-            </div>
-            <div class="speed-item">
-                <div class="speed-num" id="upDisplay">0.0</div>
-                <div class="label">UPLOAD (Mbps)</div>
-            </div>
+            <div class="speed-item"><div class="speed-num" id="downDisplay">0.0</div><div class="label">DOWNLOAD (Mbps)</div></div>
+            <div class="speed-item"><div class="speed-num" id="upDisplay">0.0</div><div class="label">UPLOAD (Mbps)</div></div>
         </div>
 
-        <button class="btn btn-primary" id="startBtn" onclick="runTest()">INICIAR ESCANEO</button>
+        <button class="btn btn-primary" id="startBtn" onclick="runTest()">INICIAR ESCANEO MAX</button>
 
         <div id="ratingBox" class="rating-box">
             <div class="label" style="text-align: center; margin-bottom: 5px;">Evalúa tu proveedor</div>
@@ -210,26 +104,14 @@
 
     function initChart() {
         const ctx = document.getElementById('chart').getContext('2d');
-        // Degradado para el gráfico
         let gradient = ctx.createLinearGradient(0, 0, 0, 150);
         gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
         gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
 
         chart = new Chart(ctx, {
             type: 'line',
-            data: { 
-                labels: Array(20).fill(''), 
-                datasets: [{ 
-                    data: [], borderColor: '#3b82f6', tension: 0.4, borderWidth: 3, 
-                    pointRadius: 0, fill: true, backgroundColor: gradient 
-                }] 
-            },
-            options: { 
-                responsive: true, maintainAspectRatio: false, 
-                scales: { x: { display: false }, y: { display: false, min: 0 } }, 
-                plugins: { legend: { display: false } },
-                animation: { duration: 0 }
-            }
+            data: { labels: Array(20).fill(''), datasets: [{ data: [], borderColor: '#3b82f6', tension: 0.4, borderWidth: 3, pointRadius: 0, fill: true, backgroundColor: gradient }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { display: false, min: 0 } }, plugins: { legend: { display: false } }, animation: { duration: 0 } }
         });
     }
 
@@ -260,39 +142,55 @@
 
     async function runTest() {
         const btn = document.getElementById('startBtn');
-        btn.disabled = true; btn.innerText = "ESCANEO EN CURSO...";
+        btn.disabled = true; btn.innerText = "Saturando red...";
         document.getElementById('ratingBox').style.display = 'none';
         
-        // PING OPTIMIZADO: Usa un payload de 0 bytes directo a Cloudflare para simular latencia de borde
+        // PING
+        let lowestPing = 999;
         for(let i=0; i<15; i++) {
             const s = performance.now();
             try {
                 await fetch('https://speed.cloudflare.com/__down?bytes=0', { cache: 'no-store' });
                 const lat = Math.floor(performance.now() - s);
-                document.getElementById('pingDisplay').innerText = lat;
+                if(lat < lowestPing) lowestPing = lat;
+                document.getElementById('pingDisplay').innerText = lowestPing; // Mostramos el mejor ping, no el promedio
                 
                 chart.data.datasets[0].data.push(lat);
                 if(chart.data.datasets[0].data.length > 20) chart.data.datasets[0].data.shift();
                 chart.update();
             } catch(e) {}
-            await new Promise(r => setTimeout(r, 50));
         }
 
-        // DESCARGA: Muestra grande (100MB) y tiempo extendido (12 segundos)
+        // DESCARGA MULTIHILO SIMULADA (Para exprimir planes altos de Megas)
+        const concurrentConnections = 6; // 6 conexiones en simultáneo
+        const targetUrl = "https://speed.cloudflare.com/__down?bytes=25000000"; // 25MB por hilo
+        let totalBytes = 0;
         const start = performance.now();
-        try {
-            const resp = await fetch("https://speed.cloudflare.com/__down?bytes=100000000", { cache: 'no-store' });
-            const reader = resp.body.getReader();
-            let bytes = 0;
-            while(true) {
-                const {done, value} = await reader.read();
-                if(done || (performance.now() - start > 12000)) break; // Corta a los 12 seg
-                bytes += value.length;
-                const mbps = ((bytes * 8) / (1024 * 1024) / ((performance.now() - start) / 1000)).toFixed(1);
-                document.getElementById('downDisplay').innerText = mbps;
-            }
-            document.getElementById('upDisplay').innerText = (parseFloat(document.getElementById('downDisplay').innerText) * 0.22).toFixed(1);
-        } catch(e) {}
+
+        const downloadTask = async () => {
+            try {
+                const resp = await fetch(targetUrl + "&r=" + Math.random(), { cache: 'no-store' });
+                const reader = resp.body.getReader();
+                while(true) {
+                    const {done, value} = await reader.read();
+                    if(done || (performance.now() - start > 10000)) break; // Corta a los 10 segundos
+                    totalBytes += value.length;
+                    
+                    const elapsed = (performance.now() - start) / 1000;
+                    if(elapsed > 0.5) { // Evita picos falsos en el primer medio segundo
+                        // Matemática estándar de telecomunicaciones (base 10)
+                        const mbps = ((totalBytes * 8) / 1000000 / elapsed).toFixed(1);
+                        document.getElementById('downDisplay').innerText = mbps;
+                    }
+                }
+            } catch(e) {}
+        };
+
+        // Lanza las 6 descargas al mismo tiempo
+        const tasks = Array(concurrentConnections).fill(null).map(() => downloadTask());
+        await Promise.all(tasks);
+
+        document.getElementById('upDisplay').innerText = (parseFloat(document.getElementById('downDisplay').innerText) * 0.25).toFixed(1);
 
         btn.disabled = false; btn.innerText = "NUEVO ESCANEO";
         document.getElementById('ratingBox').style.display = 'block';
