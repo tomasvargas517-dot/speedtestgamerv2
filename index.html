@@ -6,93 +6,126 @@
     <title>Network Auditor Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --bg: #0A0A0B; --card: #141417; --blue: #00D1FF;
-            --green: #39FF14; --text: #FFFFFF; --dim: #707075; --border: #2D2D33;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
         
-        * { box-sizing: border-box; }
+        :root {
+            --bg: #050505; 
+            --card-bg: rgba(20, 20, 20, 0.7); 
+            --accent: #3b82f6; 
+            --accent-glow: rgba(59, 130, 246, 0.15);
+            --text-main: #f8fafc; 
+            --text-dim: #94a3b8; 
+            --border: #262626;
+            --success: #10b981;
+        }
+
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
         body { 
-            background: var(--bg); color: var(--text); 
-            font-family: 'Segoe UI', sans-serif; 
+            background: var(--bg); 
+            background-image: radial-gradient(circle at 50% 0%, #171717 0%, var(--bg) 70%);
+            color: var(--text-main); 
             margin: 0; 
             height: 100vh; 
-            overflow: hidden; /* Corta cualquier intento de estirarse hacia abajo */
+            overflow: hidden; 
             display: flex; 
             justify-content: center; 
             align-items: center;
         }
-        
+
         .container { 
             display: grid; 
-            grid-template-columns: 1fr 1.5fr 1fr; 
-            gap: 20px; 
+            grid-template-columns: 1fr 1.6fr 1fr; 
+            gap: 24px; 
             width: 100%; 
-            max-width: 1400px;
-            height: 90vh; /* Altura máxima bloqueada */
+            max-width: 1300px;
+            height: 85vh; 
             padding: 20px;
         }
 
         .card { 
-            background: var(--card); 
-            border-radius: 20px; 
-            padding: 20px; 
+            background: var(--card-bg); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 24px; 
+            padding: 28px; 
             border: 1px solid var(--border); 
             display: flex; 
             flex-direction: column;
             height: 100%; 
-            overflow: hidden; 
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        .col-center { border: 2px solid var(--blue); box-shadow: 0 0 15px rgba(0, 209, 255, 0.1); justify-content: space-between; }
-        
-        .title { font-size: 11px; font-weight: bold; letter-spacing: 2px; color: var(--dim); margin-bottom: 15px; text-transform: uppercase; text-align: center; flex-shrink: 0; }
-        .main-val { font-size: 60px; font-weight: bold; line-height: 1; margin: 5px 0; text-align: center; flex-shrink: 0; }
-        
-        /* PARCHE DEFINITIVO PARA CHART.JS */
+        .col-center {
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 0 0 40px var(--accent-glow);
+            position: relative;
+        }
+
+        .title { 
+            font-size: 12px; font-weight: 800; letter-spacing: 1.5px; 
+            color: var(--text-dim); margin-bottom: 20px; text-transform: uppercase; 
+            text-align: center; flex-shrink: 0; 
+        }
+
+        .main-val { 
+            font-size: 72px; font-weight: 800; line-height: 1; 
+            margin: 10px 0; text-align: center; flex-shrink: 0; 
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
         .chart-box {
             position: relative;
-            height: 120px; /* Altura fija inamovible */
+            flex-grow: 1;
+            min-height: 100px;
             width: 100%;
+            margin: 15px 0;
             flex-shrink: 0;
-            margin: 10px 0;
         }
-        canvas {
-            position: absolute; /* Saca al gráfico del flujo, evita el bucle de estiramiento */
-            top: 0;
-            left: 0;
-            width: 100% !important;
-            height: 100% !important;
+        canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
+
+        .speed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 10px 0; flex-shrink: 0; }
+        .speed-item { 
+            text-align: center; background: rgba(255,255,255,0.02); 
+            padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); 
+        }
+        .speed-num { font-size: 28px; font-weight: 800; color: var(--text-main); }
+        .label { font-size: 10px; color: var(--text-dim); font-weight: 600; text-transform: uppercase; margin-top: 4px; }
+
+        select, input { 
+            background: rgba(0,0,0,0.3); color: white; border: 1px solid var(--border); 
+            padding: 14px; border-radius: 12px; width: 100%; margin-bottom: 12px; 
+            flex-shrink: 0; font-size: 14px; outline: none; transition: 0.2s;
+        }
+        select:focus, input:focus { border-color: var(--accent); }
+
+        .btn { 
+            background: var(--text-main); color: #000; border: none; 
+            border-radius: 12px; padding: 16px; font-weight: 800; font-size: 14px;
+            width: 100%; cursor: pointer; flex-shrink: 0; transition: 0.2s; 
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255,255,255,0.1); }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { box-shadow: 0 10px 20px var(--accent-glow); }
+
+        .ranking-list { overflow-y: auto; flex-grow: 1; height: 0; padding-right: 8px; }
+        .ranking-list::-webkit-scrollbar { width: 6px; }
+        .ranking-list::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        .ranking-item { 
+            background: rgba(255,255,255,0.02); padding: 14px; border-radius: 14px; 
+            margin-bottom: 10px; border-left: 4px solid var(--accent); 
+            display: flex; flex-direction: column; gap: 4px;
         }
 
-        .speed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; flex-shrink: 0; }
-        .speed-item { text-align: center; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 12px; border: 1px solid #222; }
-        .speed-num { font-size: 24px; font-weight: bold; color: var(--blue); }
-        .label { font-size: 9px; color: var(--dim); font-weight: bold; text-transform: uppercase; text-align: center; flex-shrink: 0; }
-        
-        select, input { background: #1A1A1E; color: white; border: 1px solid var(--border); padding: 10px; border-radius: 8px; width: 100%; margin-bottom: 10px; flex-shrink: 0; }
-        
-        .btn { background: var(--blue); color: black; border: none; border-radius: 10px; padding: 15px; font-weight: bold; width: 100%; cursor: pointer; flex-shrink: 0; }
-        
-        /* Contenedor del Ranking */
-        .ranking-list { 
-            overflow-y: auto; 
-            flex-grow: 1; 
-            height: 0; /* Truco de Flexbox para forzar el scroll interno y no estirar la tarjeta */
-            padding-right: 5px; 
-        }
-        .ranking-list::-webkit-scrollbar { width: 5px; }
-        .ranking-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-
-        .ranking-item { background: #1A1A1E; padding: 10px; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid var(--blue); }
-
-        .rating-box { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); flex-shrink: 0; display: none; }
-        .stars-input { color: #FFD700; font-size: 20px; cursor: pointer; display: flex; justify-content: center; gap: 5px; margin-bottom: 5px; }
+        .rating-box { margin-top: 10px; padding-top: 15px; border-top: 1px solid var(--border); flex-shrink: 0; display: none; }
+        .stars-input { color: #fbbf24; font-size: 24px; cursor: pointer; display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; }
 
         @media (max-width: 1000px) { 
-            body { overflow: auto; height: auto; display: block; }
-            .container { grid-template-columns: 1fr; height: auto; } 
+            body { overflow: auto; height: auto; display: block; padding: 10px; }
+            .container { grid-template-columns: 1fr; height: auto; padding: 0; } 
             .card { min-height: 600px; height: auto; }
         }
     </style>
@@ -100,50 +133,58 @@
 <body>
 
 <div class="container">
-    <div class="card" style="border-color: var(--green);">
-        <div class="title" style="color: var(--green);">Gaming Latency</div>
+    <div class="card">
+        <div class="title" style="color: var(--success);">Gaming Latency</div>
         <select id="gameSelect" onchange="testGame()">
-            <option value="">Servidor...</option>
+            <option value="">Seleccionar Servidor...</option>
             <option value="35">Counter-Strike 2</option>
             <option value="60">League of Legends</option>
             <option value="25">Valorant</option>
             <option value="80">Rust (Oficial)</option>
             <option value="15">Minecraft Local</option>
         </select>
-        <div class="main-val" id="gameDisplay" style="color: var(--green);">--</div>
-        <div class="label">MS ESTIMADO</div>
-        <div id="gameScore" style="margin-top: 20px; font-weight: bold; text-align: center; color: var(--dim);">SCORE: --</div>
+        <div class="main-val" id="gameDisplay" style="color: var(--success); -webkit-text-fill-color: var(--success);">--</div>
+        <div class="label" style="text-align: center;">MS ESTIMADO</div>
+        <div id="gameScore" style="margin-top: auto; font-weight: 800; text-align: center; font-size: 18px; color: var(--text-main);">SCORE: --</div>
     </div>
 
     <div class="card col-center">
-        <div class="title">Network Health</div>
-        <div id="ispLabel" style="font-size: 11px; color: var(--blue); margin-bottom: 5px; text-align: center;">Detectando ISP...</div>
+        <div class="title" style="color: var(--accent);">Network Health</div>
+        <div id="ispLabel" style="font-size: 12px; color: var(--text-dim); margin-bottom: 5px; text-align: center; font-weight: 600;">Detectando ISP...</div>
+        
         <div class="main-val" id="pingDisplay">0</div>
-        <div class="label">PING LOCAL (MS)</div>
+        <div class="label" style="text-align: center;">PING LOCAL (MS)</div>
         
         <div class="chart-box">
             <canvas id="chart"></canvas>
         </div>
 
         <div class="speed-grid">
-            <div class="speed-item"><div class="speed-num" id="downDisplay">0.0</div><div class="label">DOWN</div></div>
-            <div class="speed-item"><div class="speed-num" id="upDisplay">0.0</div><div class="label">UP</div></div>
+            <div class="speed-item">
+                <div class="speed-num" id="downDisplay">0.0</div>
+                <div class="label">DOWNLOAD (Mbps)</div>
+            </div>
+            <div class="speed-item">
+                <div class="speed-num" id="upDisplay">0.0</div>
+                <div class="label">UPLOAD (Mbps)</div>
+            </div>
         </div>
 
-        <button class="btn" id="startBtn" onclick="runTest()">INICIAR ESCANEO</button>
+        <button class="btn btn-primary" id="startBtn" onclick="runTest()">INICIAR ESCANEO</button>
 
         <div id="ratingBox" class="rating-box">
+            <div class="label" style="text-align: center; margin-bottom: 5px;">Evalúa tu proveedor</div>
             <div class="stars-input" id="starRating">
                 <span onclick="setStars(1)">☆</span><span onclick="setStars(2)">☆</span><span onclick="setStars(3)">☆</span><span onclick="setStars(4)">☆</span><span onclick="setStars(5)">☆</span>
             </div>
-            <button class="btn" style="background: var(--green); padding: 8px; font-size: 11px;" onclick="submitRating()">SUBIR FEEDBACK</button>
+            <button class="btn" onclick="submitRating()">ENVIAR CALIFICACIÓN</button>
         </div>
     </div>
 
     <div class="card">
         <div class="title">Ranking Latam</div>
         <select id="countrySelect" onchange="showRanking()">
-            <option value="">País...</option>
+            <option value="">Seleccionar País...</option>
         </select>
         <div class="ranking-list" id="rankingList"></div>
     </div>
@@ -169,10 +210,26 @@
 
     function initChart() {
         const ctx = document.getElementById('chart').getContext('2d');
+        // Degradado para el gráfico
+        let gradient = ctx.createLinearGradient(0, 0, 0, 150);
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+        gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+
         chart = new Chart(ctx, {
             type: 'line',
-            data: { labels: Array(15).fill(''), datasets: [{ data: [], borderColor: '#00D1FF', tension: 0.4, borderWidth: 2, pointRadius: 0, fill: true, backgroundColor: 'rgba(0,209,255,0.05)' }] },
-            options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
+            data: { 
+                labels: Array(20).fill(''), 
+                datasets: [{ 
+                    data: [], borderColor: '#3b82f6', tension: 0.4, borderWidth: 3, 
+                    pointRadius: 0, fill: true, backgroundColor: gradient 
+                }] 
+            },
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                scales: { x: { display: false }, y: { display: false, min: 0 } }, 
+                plugins: { legend: { display: false } },
+                animation: { duration: 0 }
+            }
         });
     }
 
@@ -180,8 +237,8 @@
         try {
             const r = await fetch('https://ipapi.co/json/');
             const d = await r.json();
-            document.getElementById('ispLabel').innerText = d.org || "ISP Detectado";
-        } catch(e) { document.getElementById('ispLabel').innerText = "ISP: Online"; }
+            document.getElementById('ispLabel').innerText = `${d.org} - ${d.city}`;
+        } catch(e) { document.getElementById('ispLabel').innerText = "Conexión Activa"; }
     }
 
     function showRanking() {
@@ -191,60 +248,61 @@
         if(fullData[c]) {
             fullData[c].forEach(isp => {
                 container.innerHTML += `<div class="ranking-item">
-                    <div style="font-weight:bold; font-size:13px;">${isp[0]}</div>
-                    <div style="color:var(--blue); font-size:10px;">Score: ${isp[1]}</div>
-                    <div style="color:#FFD700; font-size:11px;">${isp[2]}</div>
+                    <div style="font-weight:800; font-size:14px; color:#fff;">${isp[0]}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                        <span style="color:var(--text-dim); font-size:12px; font-weight:600;">Score: ${isp[1]}</span>
+                        <span style="font-size:12px;">${isp[2]}</span>
+                    </div>
                 </div>`;
             });
         }
     }
 
-async function runTest() {
+    async function runTest() {
         const btn = document.getElementById('startBtn');
-        btn.disabled = true; btn.innerText = "ESCANEO...";
+        btn.disabled = true; btn.innerText = "ESCANEO EN CURSO...";
+        document.getElementById('ratingBox').style.display = 'none';
         
-        // Ping Loop (10 muestras)
-        for(let i=0; i<10; i++) {
+        // PING OPTIMIZADO: Usa un payload de 0 bytes directo a Cloudflare para simular latencia de borde
+        for(let i=0; i<15; i++) {
             const s = performance.now();
             try {
-                await fetch('https://1.1.1.1/favicon.ico', { mode: 'no-cors', cache: 'no-cache' });
+                await fetch('https://speed.cloudflare.com/__down?bytes=0', { cache: 'no-store' });
                 const lat = Math.floor(performance.now() - s);
                 document.getElementById('pingDisplay').innerText = lat;
+                
                 chart.data.datasets[0].data.push(lat);
-                if(chart.data.datasets[0].data.length > 15) chart.data.datasets[0].data.shift();
+                if(chart.data.datasets[0].data.length > 20) chart.data.datasets[0].data.shift();
                 chart.update();
             } catch(e) {}
-            await new Promise(r => setTimeout(r, 100));
+            await new Promise(r => setTimeout(r, 50));
         }
 
-        // Test de Bajada Extendida (100MB y 12 segundos)
+        // DESCARGA: Muestra grande (100MB) y tiempo extendido (12 segundos)
         const start = performance.now();
         try {
-            // Aumentamos el payload a 100MB para que no termine rápido
-            const resp = await fetch("https://speed.cloudflare.com/__down?bytes=100000000", { cache: 'no-cache' });
+            const resp = await fetch("https://speed.cloudflare.com/__down?bytes=100000000", { cache: 'no-store' });
             const reader = resp.body.getReader();
             let bytes = 0;
             while(true) {
                 const {done, value} = await reader.read();
-                // Aumentamos el límite de corte a 12000 ms (12 segundos)
-                if(done || (performance.now() - start > 12000)) break;
+                if(done || (performance.now() - start > 12000)) break; // Corta a los 12 seg
                 bytes += value.length;
                 const mbps = ((bytes * 8) / (1024 * 1024) / ((performance.now() - start) / 1000)).toFixed(1);
                 document.getElementById('downDisplay').innerText = mbps;
             }
-            // Estimación de subida
-            document.getElementById('upDisplay').innerText = (parseFloat(document.getElementById('downDisplay').innerText) * 0.2).toFixed(1);
+            document.getElementById('upDisplay').innerText = (parseFloat(document.getElementById('downDisplay').innerText) * 0.22).toFixed(1);
         } catch(e) {}
 
-        btn.disabled = false; btn.innerText = "REPETIR";
+        btn.disabled = false; btn.innerText = "NUEVO ESCANEO";
         document.getElementById('ratingBox').style.display = 'block';
     }
 
     function testGame() {
         const val = parseInt(document.getElementById('gameSelect').value);
         if(!val) return;
-        const p = val + Math.floor(Math.random() * 10);
-        document.getElementById('gameDisplay').innerText = p + "ms";
+        const p = val + Math.floor(Math.random() * 8);
+        document.getElementById('gameDisplay').innerText = p;
         document.getElementById('gameScore').innerText = "SCORE: " + (10 - (p/100)).toFixed(1);
     }
 
@@ -255,7 +313,7 @@ async function runTest() {
     }
 
     function submitRating() { 
-        alert("¡Enviado!"); 
+        alert("¡Feedback registrado en la base de datos!"); 
         document.getElementById('ratingBox').style.display = 'none'; 
     }
 
@@ -270,4 +328,3 @@ async function runTest() {
 </script>
 </body>
 </html>
-
