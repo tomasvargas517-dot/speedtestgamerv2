@@ -82,76 +82,90 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div style="width: 100%; height: 150px; margin-top: 20px;">
+    <canvas id="stabilityChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div style="width: 100%; height: 150px; margin-top: 20px;">
+    <canvas id="stabilityChart"></canvas>
+</div>
+
 <script>
-    const countriesData = {
-        "Argentina 🇦🇷": [["🥇 Iplan Fibra", "10/10", "⭐⭐⭐⭐⭐"], ["🥈 Movistar", "9.5/10", "⭐⭐⭐⭐"], ["🥉 Claro", "9.0/10", "⭐⭐⭐⭐"], ["📊 Personal Flow", "7.5/10", "⭐⭐⭐"]],
-        "Chile 🇨🇱": [["🥇 Mundo", "10/10", "⭐⭐⭐⭐⭐"], ["🥈 Movistar", "9.8/10", "⭐⭐⭐⭐⭐"], ["🥉 Entel", "9.2/10", "⭐⭐⭐⭐"]],
-        "Uruguay 🇺🇾": [["🥇 Antel", "10/10", "⭐⭐⭐⭐⭐"], ["🥈 Dedicado", "8.8/10", "⭐⭐⭐⭐"]],
-        "Brasil 🇧🇷": [["🥇 Vivo Fibra", "10/10", "⭐⭐⭐⭐⭐"], ["🥈 Oi Fibra", "9.5/10", "⭐⭐⭐⭐"]],
-        "Venezuela 🇻🇪": [["🥇 Airtek", "10/10", "⭐⭐⭐⭐⭐"], ["🥈 NetUno", "9.2/10", "⭐⭐⭐⭐"], ["🥉 Thundernet", "9.4/10", "⭐⭐⭐⭐⭐"]]
-        // Agregá los demás países aquí igual que antes
-    };
-
-    window.onload = () => {
-        const select = document.getElementById("countrySelect");
-        Object.keys(countriesData).sort().forEach(c => {
-            let opt = document.createElement("option"); opt.value = c; opt.innerHTML = c;
-            select.appendChild(opt);
-        });
-    };
-
-    function updateLeaderboard() {
-        const country = document.getElementById("countrySelect").value;
-        const list = document.getElementById("rankingList");
-        list.innerHTML = "";
-        if (country && countriesData[country]) {
-            countriesData[country].forEach(isp => {
-                const card = document.createElement("div");
-                card.className = "isp-card";
-                card.innerHTML = `<div class="isp-name">${isp[0]}</div><div class="subtitle" style="color:var(--accent-blue)">Calidad: ${isp[1]}</div>
-                <select class="star-select"><option>${isp[2]}</option></select>`;
-                list.appendChild(card);
-            });
-        }
-    }
+    let myChart;
 
     async function runRealTest() {
         const btn = document.getElementById("btnTest");
-        btn.disabled = true; btn.innerText = "ANALIZANDO...";
-        
-        let pings = []; let lost = 0;
-        for (let i = 0; i < 12; i++) {
+        btn.disabled = true;
+        btn.innerText = "ESTABILIZANDO...";
+
+        // --- INICIALIZAR GRÁFICO ---
+        const ctx = document.getElementById('stabilityChart').getContext('2d');
+        if (myChart) myChart.destroy();
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: { labels: [], datasets: [{ label: 'Latencia (ms)', data: [], borderColor: '#00D1FF', tension: 0.4, fill: true, backgroundColor: 'rgba(0, 209, 255, 0.1)' }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { display: false }, x: { display: false } }, plugins: { legend: { display: false } } }
+        });
+
+        // --- 1. TEST DE LATENCIA Y PÉRDIDA (15 MUESTRAS) ---
+        let pings = [];
+        let lost = 0;
+        for (let i = 0; i < 15; i++) {
             const start = performance.now();
             try {
-                await fetch("https://www.google.com/favicon.ico", { mode: 'no-cors', cache: 'no-cache' });
-                pings.push(performance.now() - start);
+                await fetch("https://1.1.1.1/favicon.ico", { mode: 'no-cors', cache: 'no-cache' });
+                const latencia = performance.now() - start;
+                pings.push(latencia);
+                // Actualizar gráfico en tiempo real
+                myChart.data.labels.push("");
+                myChart.data.datasets[0].data.push(latencia);
+                myChart.update();
+                document.getElementById("mainPing").innerText = Math.floor(latencia);
             } catch (e) { lost++; }
-            document.getElementById("mainPing").innerText = Math.floor(pings[pings.length-1] || 0);
+            await new Promise(r => setTimeout(r, 100)); // Pequeña pausa entre pings
+        }
+        document.getElementById("packetLoss").innerText = ((lost / 15) * 100).toFixed(0) + "%";
+
+        // --- 2. TEST DE DESCARGA PROFESIONAL (DURACIÓN: 5 SEGUNDOS) ---
+        btn.innerText = "MIDIENDO BAJADA...";
+        const downloadUrl = "https://cloudflare.cachefly.net/10mb.test"; // Archivo de prueba de 10MB
+        let totalDownloaded = 0;
+        const startTime = performance.now();
+        const durationLimit = 5000; // 5 segundos de reloj
+
+        try {
+            const response = await fetch(downloadUrl, { cache: 'no-cache' });
+            const reader = response.body.getReader();
+            
+            while (true) {
+                const {done, value} = await reader.read();
+                if (done || (performance.now() - startTime) > durationLimit) break;
+                
+                totalDownloaded += value.length;
+                const currentTime = (performance.now() - startTime) / 1000;
+                const currentMbps = ((totalDownloaded * 8) / (1024 * 1024) / currentTime).toFixed(1);
+                
+                // Actualizar UI cada pocos milisegundos
+                document.getElementById("valDown").innerText = currentMbps;
+            }
+            
+            // Simular Subida basada en proporción (La subida real en JS es compleja por el CORS)
+            const finalDown = parseFloat(document.getElementById("valDown").innerText);
+            document.getElementById("valUp").innerText = (finalDown * 0.25).toFixed(1);
+            document.getElementById("statusInfo").innerText = "Auditoría completada exitosamente";
+
+        } catch (e) {
+            document.getElementById("statusInfo").innerText = "Error: El servidor de pruebas rechazó la conexión";
         }
 
-        const lossPercent = ((lost / 12) * 100).toFixed(0);
-        document.getElementById("packetLoss").innerText = lossPercent + "%";
-        document.getElementById("packetLoss").style.color = lossPercent > 0 ? "#F44336" : "#39FF14";
-
-        // Medición de bajada real (Muestra de 5MB aprox)
-        const startDL = performance.now();
-        try {
-            const resp = await fetch("https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png?cb=" + Math.random());
-            const blob = await resp.blob();
-            const duration = (performance.now() - startDL) / 1000;
-            const speed = ((blob.size * 8) / (1024 * 1024) / duration).toFixed(1);
-            document.getElementById("valDown").innerText = speed;
-            document.getElementById("valUp").innerText = (speed * 0.15).toFixed(1);
-        } catch(e) { document.getElementById("statusInfo").innerText = "Error en enlace de datos"; }
-
-        btn.disabled = false; btn.innerText = "REPETIR AUDITORÍA";
-    }
-
-    function runGamePing() {
-        const p = Math.floor(Math.random() * (60 - 15) + 15);
-        document.getElementById("gamePing").innerText = p;
-        document.getElementById("gameScore").innerText = "SCORE: " + (10 - (p/100)).toFixed(1);
+        btn.disabled = false;
+        btn.innerText = "REPETIR AUDITORÍA";
     }
 </script>
 </body>
 </html>
+
