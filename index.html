@@ -6,19 +6,17 @@
     <title>Network Auditor Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* IMPORTACIÓN DE FUENTE DEL CHAT (INTER) */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
         
         :root { 
-            /* PALETA DE COLORES SIMPLISTA (CHART-LIKE) */
-            --bg: #0d1117;          /* Fondo oscuro profundo (similar a GitHub/Chat) */
-            --card-bg: #161b22;     /* Fondo de tarjeta sutilmente más claro */
-            --accent: #2f81f7;      /* Azul de acento limpio */
-            --text-main: #c9d1d9;    /* Texto principal gris claro */
-            --text-bold: #f0f6fc;    /* Texto resaltado casi blanco */
-            --text-dim: #8b949e;     /* Texto secundario gris tenue */
-            --border: #30363d;       /* Bordes muy sutiles */
-            --success: #3fb950;      /* Verde funcional */
+            --bg: #0d1117; 
+            --card-bg: #161b22; 
+            --accent: #2f81f7; 
+            --text-main: #c9d1d9; 
+            --text-bold: #f0f6fc; 
+            --text-dim: #8b949e; 
+            --border: #30363d; 
+            --success: #3fb950; 
         }
         
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
@@ -33,7 +31,6 @@
             align-items: center; 
         }
         
-        /* ESTRUCTURA DE COLUMNAS BLOQUEADA */
         .container { 
             display: grid; 
             grid-template-columns: 1fr 1.6fr 1fr; 
@@ -44,7 +41,6 @@
             padding: 16px; 
         }
         
-        /* TARJETAS SIMPLIFICADAS: Sin glows, sin blur, bordes finos */
         .card { 
             background: var(--card-bg); 
             border-radius: 12px; 
@@ -56,23 +52,19 @@
             overflow: hidden; 
         }
         
-        /* La columna central ya no resalta tanto */
         .col-center { border: 1px solid var(--border); }
         
-        /* TÍTULOS LIMPIOS: Izquierda, gris tenue */
         .title { 
             font-size: 11px; font-weight: 700; letter-spacing: 1px; 
             color: var(--text-dim); margin-bottom: 16px; text-transform: uppercase; 
             flex-shrink: 0; 
         }
         
-        /* VALORES PRINCIPALES: Grandes, limpios, sin gradientes */
         .main-val { 
             font-size: 64px; font-weight: 700; line-height: 1; 
             margin: 8px 0; color: var(--text-bold); flex-shrink: 0; 
         }
         
-        /* PARCHE DE CHART.JS MANTENIDO */
         .chart-box { 
             position: relative; flex-grow: 1; min-height: 80px; 
             width: 100%; margin: 12px 0; flex-shrink: 0; 
@@ -82,16 +74,11 @@
             width: 100% !important; height: 100% !important; 
         }
         
-        /* GRILLA DE VELOCIDAD SIMPLIFICADA */
         .speed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; flex-shrink: 0; }
-        .speed-item { 
-            text-align: center; background: transparent; padding: 12px; 
-            border-radius: 8px; border: 1px solid var(--border); 
-        }
+        .speed-item { text-align: center; background: transparent; padding: 12px; border-radius: 8px; border: 1px solid var(--border); }
         .speed-num { font-size: 24px; font-weight: 700; color: var(--text-bold); }
         .label { font-size: 9px; color: var(--text-dim); font-weight: 500; text-transform: uppercase; margin-top: 2px; }
         
-        /* INPUTS Y SELECTS ESTILO CHAT: Planos, fondo oscuro */
         select, input { 
             background: var(--bg); color: var(--text-main); border: 1px solid var(--border); 
             padding: 12px; border-radius: 6px; width: 100%; margin-bottom: 12px; 
@@ -99,7 +86,6 @@
         }
         select:focus, input:focus { border-color: var(--accent); }
         
-        /* BOTONES PLANOS */
         .btn { 
             background: var(--card-bg); color: var(--text-bold); border: 1px solid var(--border); 
             border-radius: 6px; padding: 14px; font-weight: 700; font-size: 13px; 
@@ -109,21 +95,16 @@
         .btn-primary { background: var(--accent); color: white; border: none; }
         .btn-primary:hover { background: #4b91f8; transform: none; box-shadow: none; }
         
-        /* RANKING SIMPLIFICADO */
         .ranking-list { overflow-y: auto; flex-grow: 1; height: 0; padding-right: 6px; }
         .ranking-list::-webkit-scrollbar { width: 4px; }
         .ranking-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
         
-        .ranking-item { 
-            background: transparent; padding: 12px; border-radius: 8px; 
-            margin-bottom: 8px; border: 1px solid var(--border); 
-        }
+        .ranking-item { background: transparent; padding: 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
         
-        /* SISTEMA DE CALIFICACIÓN */
         .rating-box { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border); flex-shrink: 0; display: none; }
         .stars-input { color: #fbbf24; font-size: 20px; cursor: pointer; display: flex; justify-content: center; gap: 6px; margin-bottom: 8px; }
+        .locked-isp { font-size: 14px; font-weight: 700; color: var(--accent); text-align: center; margin-bottom: 8px; }
         
-        /* RESPONSIVE MANTENIDO */
         @media (max-width: 1000px) { 
             body { overflow: auto; height: auto; display: block; padding: 8px; } 
             .container { grid-template-columns: 1fr; height: auto; padding: 0; } 
@@ -137,20 +118,16 @@
     <div class="card">
         <div class="title" style="color: var(--success);">Gaming Latency</div>
         <select id="gameSelect" onchange="testGame()">
-            <option value="">Servidor...</option>
-            <option value="br">CS2 / Valorant (São Paulo)</option>
-            <option value="las">LoL / Valorant (Santiago)</option>
-            <option value="miami">Rust (Miami)</option>
-            <option value="local">Nacional (Minecraft)</option>
+            <option value="">Detectando región...</option>
         </select>
         <div class="main-val" id="gameDisplay" style="color: var(--success); text-align: left; padding-left: 8px;">--</div>
-        <div class="label" style="text-align: left; padding-left: 8px;">MS ESTIMADO (RTT)</div>
+        <div class="label" style="text-align: left; padding-left: 8px;">MS REAL (RTT FÍSICO)</div>
         <div id="gameScore" style="margin-top: auto; font-weight: 700; text-align: left; padding-left: 8px; font-size: 16px; color: var(--text-bold);">SCORE: --</div>
     </div>
 
     <div class="card col-center">
         <div class="title">Network Auditor</div>
-        <div id="ispLabel" style="font-size: 11px; color: var(--text-dim); margin-bottom: 4px; text-align: center;">Detectando ISP...</div>
+        <div id="ispLabel" style="font-size: 11px; color: var(--text-dim); margin-bottom: 4px; text-align: center;">Detectando ubicación...</div>
         
         <div class="main-val" id="pingDisplay" style="text-align: center;">0</div>
         <div class="label" style="text-align: center;">PING (Borde)</div>
@@ -162,14 +139,15 @@
             <div class="speed-item"><div class="speed-num" id="upDisplay">0.0</div><div class="label">UP (Mbps)</div></div>
         </div>
 
-        <button class="btn btn-primary" id="startBtn" onclick="runTest()">INICIAR ESCANEO MAX</button>
+        <button class="btn btn-primary" id="startBtn" onclick="runTest()" disabled>ESPERANDO RED...</button>
 
         <div id="ratingBox" class="rating-box">
-            <div class="label" style="text-align: center; margin-bottom: 4px;">Evalúa tu ISP</div>
+            <div class="label" style="text-align: center; margin-bottom: 4px;">Evalúa tu conexión actual</div>
+            <div id="lockedIspName" class="locked-isp">Buscando ISP...</div>
             <div class="stars-input" id="starRating">
                 <span onclick="setStars(1)">☆</span><span onclick="setStars(2)">☆</span><span onclick="setStars(3)">☆</span><span onclick="setStars(4)">☆</span><span onclick="setStars(5)">☆</span>
             </div>
-            <button class="btn" onclick="submitRating()" style="padding: 10px; font-size: 12px;">CALIFICAR</button>
+            <button class="btn" onclick="submitRating()" style="padding: 10px; font-size: 12px;">ENVIAR CALIFICACIÓN</button>
         </div>
     </div>
 
@@ -183,7 +161,6 @@
 </div>
 
 <script>
-    // --- DATOS Y LÓGICA MANTENIDA INTÁCTA ---
     const fullData = {
         "Argentina 🇦🇷": [["Iplan Fibra", "10/10", "⭐⭐⭐⭐⭐"], ["Movistar", "9.2", "⭐⭐⭐⭐"], ["Claro", "8.5", "⭐⭐⭐⭐"], ["Personal", "7.0", "⭐⭐⭐"]],
         "Bolivia 🇧🇴": [["AXS", "9.0", "⭐⭐⭐⭐"], ["Entel", "8.5", "⭐⭐⭐⭐"]],
@@ -200,11 +177,13 @@
 
     let chart;
     let selectedStars = 0;
+    let currentISP = "";
+    let currentCountryCode = "";
 
     function initChart() {
         const ctx = document.getElementById('chart').getContext('2d');
         let gradient = ctx.createLinearGradient(0, 0, 0, 100);
-        gradient.addColorStop(0, 'rgba(47, 129, 247, 0.2)'); // Usando el azul accent sutil
+        gradient.addColorStop(0, 'rgba(47, 129, 247, 0.2)'); 
         gradient.addColorStop(1, 'rgba(47, 129, 247, 0)');
 
         chart = new Chart(ctx, {
@@ -214,12 +193,64 @@
         });
     }
 
-    async function detectISP() {
+    // --- NUEVO SISTEMA DE DETECCIÓN Y FILTRADO GEOGRÁFICO ---
+    async function initNetworkData() {
+        const btn = document.getElementById('startBtn');
         try {
             const r = await fetch('https://ipapi.co/json/');
             const d = await r.json();
-            document.getElementById('ispLabel').innerText = `${d.org}`;
-        } catch(e) { document.getElementById('ispLabel').innerText = "Conexión Activa"; }
+            
+            currentISP = d.org || d.isp;
+            currentCountryCode = d.country_code; // Ej: 'AR', 'BR', 'MX', 'US'
+
+            // Mostrar ISP en la interfaz y bloquearlo en la calificación
+            document.getElementById('ispLabel').innerText = `${currentISP} (${d.city}, ${d.country})`;
+            document.getElementById('lockedIspName').innerText = currentISP;
+            
+            // Llenar servidores de juego según la región
+            populateGameServers(currentCountryCode);
+            
+            btn.disabled = false;
+            btn.innerText = "INICIAR ESCANEO MAX";
+        } catch(e) { 
+            document.getElementById('ispLabel').innerText = "ISP no detectado (VPN/AdBlocker activo)"; 
+            document.getElementById('lockedIspName').innerText = "ISP Desconocido";
+            populateGameServers('US'); // Fallback a servidores globales si falla
+            btn.disabled = false;
+            btn.innerText = "INICIAR ESCANEO MAX";
+        }
+    }
+
+    function populateGameServers(countryCode) {
+        const select = document.getElementById('gameSelect');
+        select.innerHTML = '<option value="">Seleccionar Servidor...</option>';
+        
+        // Países de LATAM Sur y Brasil
+        const latamSouth = ['AR', 'CL', 'UY', 'PY', 'BO', 'PE', 'BR'];
+        
+        if (latamSouth.includes(countryCode)) {
+            select.innerHTML += `
+                <option value="https://dynamodb.sa-east-1.amazonaws.com/">CS2 / Valorant (São Paulo)</option>
+                <option value="https://www.nic.cl/">LoL / Valorant (Santiago)</option>
+                <option value="https://dynamodb.us-east-1.amazonaws.com/">Rust (Oficial Miami)</option>
+                <option value="https://www.nic.ar/">Nacional (Minecraft / Local)</option>
+            `;
+        } else if (countryCode === 'MX' || countryCode === 'CO' || countryCode === 'VE' || countryCode === 'EC') {
+            // LATAM Norte conecta mejor a Miami/Texas
+            select.innerHTML += `
+                <option value="https://dynamodb.us-east-1.amazonaws.com/">CS2 / LoL (Miami/US-East)</option>
+                <option value="https://dynamodb.us-west-1.amazonaws.com/">Valorant (US-West)</option>
+                <option value="https://dynamodb.sa-east-1.amazonaws.com/">Rust (São Paulo)</option>
+            `;
+        } else {
+            // Global / Norteamérica / Europa
+            select.innerHTML += `
+                <option value="https://dynamodb.us-east-1.amazonaws.com/">US East (N. Virginia)</option>
+                <option value="https://dynamodb.us-west-1.amazonaws.com/">US West (N. California)</option>
+                <option value="https://dynamodb.eu-central-1.amazonaws.com/">EU Central (Frankfurt)</option>
+                <option value="https://dynamodb.ap-northeast-1.amazonaws.com/">Asia (Tokyo)</option>
+            `;
+        }
     }
 
     function showRanking() {
@@ -240,39 +271,40 @@
     }
 
     async function testGame() {
-        const region = document.getElementById('gameSelect').value;
+        const url = document.getElementById('gameSelect').value;
         const display = document.getElementById('gameDisplay');
         const scoreDisplay = document.getElementById('gameScore');
 
-        if(!region) { display.innerText = "--"; scoreDisplay.innerText = "SCORE: --"; return; }
+        if(!url) { display.innerText = "--"; scoreDisplay.innerText = "SCORE: --"; return; }
         display.innerText = "...";
-        scoreDisplay.innerText = "Abriendo socket...";
-
-        const endpoints = {
-            'br': 'https://dynamodb.sa-east-1.amazonaws.com/', 
-            'las': 'https://www.google.cl/',                   
-            'miami': 'https://dynamodb.us-east-1.amazonaws.com/',
-            'local': 'https://www.google.com.ar/'              
-        };
-
-        const target = endpoints[region];
+        scoreDisplay.innerText = "Midiendo RTT...";
 
         try {
-            await fetch(target, { mode: 'no-cors', cache: 'no-store' }); // WARM-UP
+            const cacheBuster = `?t=${Date.now()}`;
+            await fetch(url + cacheBuster, { mode: 'no-cors', cache: 'no-store' }); 
+
             let lowestPing = 999;
             for(let i=0; i<4; i++) {
                 const s = performance.now();
-                await fetch(target, { mode: 'no-cors', cache: 'no-store' });
+                await fetch(url + `?t=${Date.now() + i}`, { mode: 'no-cors', cache: 'no-store' });
                 const lat = Math.floor(performance.now() - s);
                 if(lat < lowestPing) lowestPing = lat;
                 await new Promise(r => setTimeout(r, 50)); 
             }
+
+            if(lowestPing === 999 || lowestPing === 0) throw new Error("Bloqueado");
+
             display.innerText = lowestPing;
+            
             let score = 10;
             if (lowestPing > 25) { score -= (lowestPing - 25) * 0.04; }
             score = Math.max(1, Math.min(10, score)).toFixed(1);
             scoreDisplay.innerText = "SCORE: " + score + "/10";
-        } catch(e) { display.innerText = "ERR"; scoreDisplay.innerText = "Inaccesible"; }
+
+        } catch(e) { 
+            display.innerText = "ERR"; 
+            scoreDisplay.innerText = "Inaccesible"; 
+        }
     }
 
     async function runTest() {
@@ -328,10 +360,15 @@
         spans.forEach((s, i) => s.innerText = i < n ? '★' : '☆');
     }
 
-    function submitRating() { alert("¡Feedback registrado!"); document.getElementById('ratingBox').style.display = 'none'; }
+    function submitRating() { 
+        if(selectedStars === 0) return alert("Selecciona una cantidad de estrellas primero.");
+        alert(`¡Gracias! Calificaste a ${currentISP} con ${selectedStars} estrellas. Tu voto ha sido registrado.`); 
+        document.getElementById('ratingBox').style.display = 'none'; 
+    }
 
     window.onload = () => {
-        initChart(); detectISP();
+        initChart(); 
+        initNetworkData(); // Carga IP, bloquea ISP y filtra servidores
         const select = document.getElementById('countrySelect');
         Object.keys(fullData).sort().forEach(c => {
             let opt = document.createElement("option"); opt.value = c; opt.innerText = c;
