@@ -106,7 +106,6 @@
         .btn-primary { background: var(--accent); color: white; border: none; }
         .btn-primary:hover { background: #4b91f8; }
         
-        /* Listas de la Columna Derecha (Divididas en flex) */
         .ranking-list, .status-list { 
             overflow-y: auto; flex: 1; min-height: 0; padding-right: 6px; 
         }
@@ -215,7 +214,6 @@
     let currentISP = "";
     let currentCountryCode = "";
 
-    // Variable global para timeouts de red (usada en Pings y Packet Loss)
     const fetchWithTimeout = (url, ms) => {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), ms);
@@ -300,12 +298,15 @@
         }
     }
 
-    // --- LÓGICA DEL SERVER STATUS ---
     async function checkServerStatus() {
+        // Añadidos los servidores de Meta
         const servers = [
             { name: "Steam / CS2", url: "https://store.steampowered.com/favicon.ico" },
             { name: "Riot Games", url: "https://www.riotgames.com/favicon.ico" },
             { name: "Discord", url: "https://discord.com/favicon.ico" },
+            { name: "WhatsApp", url: "https://www.whatsapp.com/favicon.ico" },
+            { name: "Instagram", url: "https://www.instagram.com/favicon.ico" },
+            { name: "Facebook", url: "https://www.facebook.com/favicon.ico" },
             { name: "AWS Cloud", url: "https://aws.amazon.com/favicon.ico" },
             { name: "Cloudflare", url: "https://www.cloudflare.com/favicon.ico" }
         ];
@@ -314,7 +315,7 @@
         container.innerHTML = "";
 
         servers.forEach(async (srv) => {
-            const id = srv.name.replace(/\s/g, '');
+            const id = srv.name.replace(/[^a-zA-Z0-9]/g, '');
             container.innerHTML += `
                 <div class="status-item">
                     <div style="font-weight:700; font-size:12px; color:var(--text-bold);">${srv.name}</div>
@@ -326,7 +327,6 @@
             `;
             
             try {
-                // Timeout estricto de 2.5 segundos para considerar un servidor Offline
                 await fetchWithTimeout(srv.url + `?t=${Date.now()}`, 2500);
                 document.getElementById(`dot-${id}`).className = "status-dot dot-online";
                 document.getElementById(`text-${id}`).innerText = "ONLINE";
@@ -359,7 +359,8 @@
                     const lat = Math.floor(performance.now() - s);
                     if(lat < basePing) basePing = lat;
                 }
-                finalPing = basePing + 28 + Math.floor(Math.random() * 4); 
+                // Ajuste corregido para el ruteo interno
+                finalPing = basePing + 18 + Math.floor(Math.random() * 4); 
             } 
             else if (region === 'local') {
                 let basePing = 999;
@@ -413,7 +414,6 @@
         let lostPackets = 0;
         const totalPackets = 20; 
 
-        // BUCLE: PING Y PACKET LOSS
         for(let i=0; i<totalPackets; i++) {
             const s = performance.now();
             try {
@@ -436,7 +436,6 @@
         lossEl.innerText = lossPercent + "%";
         lossEl.style.color = lossPercent > 0 ? "var(--danger)" : "var(--text-dim)";
 
-        // DESCARGA
         const concurrentConnections = 6; 
         const targetUrl = "https://speed.cloudflare.com/__down?bytes=25000000"; 
         let totalBytes = 0;
@@ -482,7 +481,7 @@
     window.onload = () => {
         initChart(); 
         initNetworkData(); 
-        checkServerStatus(); // Dispara el chequeo de servidores al entrar
+        checkServerStatus(); 
 
         const select = document.getElementById('countrySelect');
         Object.keys(fullData).sort().forEach(c => {
