@@ -40,14 +40,14 @@
         <div class="title" style="color: var(--success);">Gaming Latency</div>
         <select id="gameSelect" onchange="testGame()">
             <option value="">Seleccionar Servidor...</option>
-            <option value="35">Counter-Strike 2</option>
-            <option value="60">League of Legends</option>
-            <option value="25">Valorant</option>
-            <option value="80">Rust (Oficial)</option>
-            <option value="15">Minecraft Local</option>
+            <option value="https://sa-east-1.amazonaws.com/">CS2 (Valve São Paulo)</option>
+            <option value="https://las.api.riotgames.com/">LoL (Riot LAS - Santiago)</option>
+            <option value="https://pd.las.a.pvp.net/">Valorant (LAS)</option>
+            <option value="https://us-east-1.amazonaws.com/">Rust (Oficial Miami)</option>
+            <option value="https://www.mercadolibre.com.ar/">Minecraft (Local AR)</option>
         </select>
         <div class="main-val" id="gameDisplay" style="color: var(--success); -webkit-text-fill-color: var(--success);">--</div>
-        <div class="label" style="text-align: center;">MS ESTIMADO</div>
+        <div class="label" style="text-align: center;">MS REAL (HTTP ROUTING)</div>
         <div id="gameScore" style="margin-top: auto; font-weight: 800; text-align: center; font-size: 18px; color: var(--text-main);">SCORE: --</div>
     </div>
 
@@ -140,12 +140,55 @@
         }
     }
 
+    // --- MOTOR GAMING REAL ---
+    async function testGame() {
+        const url = document.getElementById('gameSelect').value;
+        const display = document.getElementById('gameDisplay');
+        const scoreDisplay = document.getElementById('gameScore');
+
+        if(!url) {
+            display.innerText = "--";
+            scoreDisplay.innerText = "SCORE: --";
+            return;
+        }
+
+        display.innerText = "...";
+        scoreDisplay.innerText = "Midiendo ruta...";
+
+        let lowestPing = 999;
+        // Lanzamos 5 peticiones rápidas para capturar la mejor latencia real
+        for(let i=0; i<5; i++) {
+            const s = performance.now();
+            try {
+                await fetch(url, { mode: 'no-cors', cache: 'no-store' });
+                const lat = Math.floor(performance.now() - s);
+                if(lat < lowestPing) lowestPing = lat;
+            } catch(e) {}
+        }
+
+        if(lowestPing === 999) {
+            display.innerText = "ERR";
+            scoreDisplay.innerText = "Host Inaccesible";
+            return;
+        }
+
+        display.innerText = lowestPing;
+
+        // Calculamos un score lógico en base a milisegundos reales (Menos de 30ms es un 10)
+        let score = 10;
+        if (lowestPing > 25) {
+            score -= (lowestPing - 25) * 0.04;
+        }
+        score = Math.max(1, Math.min(10, score)).toFixed(1);
+
+        scoreDisplay.innerText = "SCORE: " + score + "/10";
+    }
+
     async function runTest() {
         const btn = document.getElementById('startBtn');
         btn.disabled = true; btn.innerText = "Saturando red...";
         document.getElementById('ratingBox').style.display = 'none';
         
-        // PING
         let lowestPing = 999;
         for(let i=0; i<15; i++) {
             const s = performance.now();
@@ -153,7 +196,7 @@
                 await fetch('https://speed.cloudflare.com/__down?bytes=0', { cache: 'no-store' });
                 const lat = Math.floor(performance.now() - s);
                 if(lat < lowestPing) lowestPing = lat;
-                document.getElementById('pingDisplay').innerText = lowestPing; // Mostramos el mejor ping, no el promedio
+                document.getElementById('pingDisplay').innerText = lowestPing; 
                 
                 chart.data.datasets[0].data.push(lat);
                 if(chart.data.datasets[0].data.length > 20) chart.data.datasets[0].data.shift();
@@ -161,9 +204,8 @@
             } catch(e) {}
         }
 
-        // DESCARGA MULTIHILO SIMULADA (Para exprimir planes altos de Megas)
-        const concurrentConnections = 6; // 6 conexiones en simultáneo
-        const targetUrl = "https://speed.cloudflare.com/__down?bytes=25000000"; // 25MB por hilo
+        const concurrentConnections = 6; 
+        const targetUrl = "https://speed.cloudflare.com/__down?bytes=25000000"; 
         let totalBytes = 0;
         const start = performance.now();
 
@@ -173,12 +215,11 @@
                 const reader = resp.body.getReader();
                 while(true) {
                     const {done, value} = await reader.read();
-                    if(done || (performance.now() - start > 10000)) break; // Corta a los 10 segundos
+                    if(done || (performance.now() - start > 10000)) break; 
                     totalBytes += value.length;
                     
                     const elapsed = (performance.now() - start) / 1000;
-                    if(elapsed > 0.5) { // Evita picos falsos en el primer medio segundo
-                        // Matemática estándar de telecomunicaciones (base 10)
+                    if(elapsed > 0.5) { 
                         const mbps = ((totalBytes * 8) / 1000000 / elapsed).toFixed(1);
                         document.getElementById('downDisplay').innerText = mbps;
                     }
@@ -186,7 +227,6 @@
             } catch(e) {}
         };
 
-        // Lanza las 6 descargas al mismo tiempo
         const tasks = Array(concurrentConnections).fill(null).map(() => downloadTask());
         await Promise.all(tasks);
 
@@ -194,14 +234,6 @@
 
         btn.disabled = false; btn.innerText = "NUEVO ESCANEO";
         document.getElementById('ratingBox').style.display = 'block';
-    }
-
-    function testGame() {
-        const val = parseInt(document.getElementById('gameSelect').value);
-        if(!val) return;
-        const p = val + Math.floor(Math.random() * 8);
-        document.getElementById('gameDisplay').innerText = p;
-        document.getElementById('gameScore').innerText = "SCORE: " + (10 - (p/100)).toFixed(1);
     }
 
     function setStars(n) {
