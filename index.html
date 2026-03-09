@@ -22,17 +22,35 @@
         
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         
-        /* Ajuste del body para apilar las tarjetas y la publicidad sin hacer scroll */
         body { 
             background: var(--bg); 
             color: var(--text-main); 
             height: 100vh; 
             overflow: hidden; 
             display: flex; 
-            flex-direction: column; /* Permite apilar elementos */
             justify-content: center; 
             align-items: center; 
             padding: 16px;
+        }
+
+        /* NUEVO ENVOLTORIO MAESTRO PARA LOS COSTADOS */
+        .page-wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 1640px; /* Más ancho para que entren los ads */
+            gap: 20px;
+            justify-content: center;
+            align-items: stretch;
+            height: 100%;
+        }
+
+        /* COLUMNA CENTRAL (Contiene app + banner inferior) */
+        .main-column {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            max-width: 1280px;
+            height: 100%;
         }
         
         .container { 
@@ -40,8 +58,7 @@
             grid-template-columns: 1fr 1.6fr 1fr; 
             gap: 16px; 
             width: 100%; 
-            max-width: 1280px; 
-            height: 78vh; /* Altura reducida para hacerle lugar al banner */
+            height: calc(100% - 106px); /* Resta el espacio del banner de abajo */
         }
         
         .card { 
@@ -120,10 +137,9 @@
         
         .beta-tag { font-size: 10px; font-weight: 500; color: var(--text-dim); text-transform: none; margin-left: 6px; }
 
-        /* NUEVO: CONTENEDOR DE PUBLICIDAD */
+        /* PUBLICIDAD INFERIOR */
         .ad-banner {
             width: 100%;
-            max-width: 1280px;
             height: 90px;
             margin-top: 16px;
             background: rgba(255, 255, 255, 0.02);
@@ -138,86 +154,122 @@
             letter-spacing: 2px;
             text-transform: uppercase;
             flex-shrink: 0;
-            overflow: hidden;
         }
 
-        @media (max-width: 1000px) { 
+        /* NUEVO: PUBLICIDAD LATERAL (SKYSCRAPERS) */
+        .ad-skyscraper {
+            width: 160px; /* Tamaño estándar de AdSense */
+            height: 100%;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-dim);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            flex-shrink: 0;
+        }
+
+        /* REGLAS PARA CELULARES Y TABLETS */
+        @media (max-width: 1200px) { 
             body { overflow: auto; height: auto; display: block; padding: 12px; } 
+            
+            /* APAGAMOS LOS ADS LATERALES PARA NO ROMPER EL CELULAR */
+            .ad-skyscraper { display: none; } 
+            
             .container { grid-template-columns: 1fr; height: auto; padding: 0; } 
             .card { min-height: 500px; height: auto; margin-bottom: 12px; } 
-            .ad-banner { margin-top: 0; }
+            .ad-banner { margin-top: 0; margin-bottom: 20px; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="card" style="padding-bottom: 12px;">
-        <div class="title" style="color: var(--success);">Gaming Latency <span class="beta-tag">(Beta - Estimado)</span></div>
-        <select id="gameSelect" onchange="testGame()">
-            <option value="">Detectando región...</option>
-        </select>
-        <div class="main-val" id="gameDisplay" style="color: var(--success); text-align: left; padding-left: 8px;">--</div>
-        <div class="label" style="text-align: left; padding-left: 8px;">MS ESTIMADO (RTT FÍSICO)</div>
-        <div id="gameScore" style="margin-top: 8px; font-weight: 700; text-align: left; padding-left: 8px; font-size: 14px; color: var(--text-bold);">SCORE: --</div>
+<div class="page-wrapper">
+    <div class="ad-skyscraper">
+        Ad Slot (160x600)
+    </div>
 
-        <div class="title" style="margin-top: 24px; color: var(--accent);">Capacidad de Red</div>
-        <div class="scroll-list" id="capabilitiesList">
-            <div class="status-item" style="border: none; padding: 0; justify-content: center;">
-                <span style="color: var(--text-dim); font-size: 11px;">Esperando escaneo...</span>
+    <div class="main-column">
+        <div class="container">
+            <div class="card" style="padding-bottom: 12px;">
+                <div class="title" style="color: var(--success);">Gaming Latency <span class="beta-tag">(Beta - Estimado)</span></div>
+                <select id="gameSelect" onchange="testGame()">
+                    <option value="">Detectando región...</option>
+                </select>
+                <div class="main-val" id="gameDisplay" style="color: var(--success); text-align: left; padding-left: 8px;">--</div>
+                <div class="label" style="text-align: left; padding-left: 8px;">MS ESTIMADO (RTT FÍSICO)</div>
+                <div id="gameScore" style="margin-top: 8px; font-weight: 700; text-align: left; padding-left: 8px; font-size: 14px; color: var(--text-bold);">SCORE: --</div>
+
+                <div class="title" style="margin-top: 24px; color: var(--accent);">Capacidad de Red</div>
+                <div class="scroll-list" id="capabilitiesList">
+                    <div class="status-item" style="border: none; padding: 0; justify-content: center;">
+                        <span style="color: var(--text-dim); font-size: 11px;">Esperando escaneo...</span>
+                    </div>
+                </div>
             </div>
+
+            <div class="card col-center">
+                <div class="title">Network Auditor</div>
+                <div id="ispLabel" style="font-size: 11px; color: var(--text-dim); margin-bottom: 4px; text-align: center;">Detectando ubicación...</div>
+                
+                <div class="metrics-row">
+                    <div class="metric-block">
+                        <div class="main-val" id="pingDisplay">0</div>
+                        <div class="label">PING (MS)</div>
+                    </div>
+                    <div class="metric-block">
+                        <div class="main-val" id="lossDisplay" style="color: var(--text-dim);">0%</div>
+                        <div class="label">PACKET LOSS</div>
+                    </div>
+                </div>
+                
+                <div class="chart-box"><canvas id="chart"></canvas></div>
+
+                <div class="speed-grid">
+                    <div class="speed-item"><div class="speed-num" id="downDisplay">0.0</div><div class="label">DOWN (Mbps)</div></div>
+                    <div class="speed-item"><div class="speed-num" id="upDisplay">0.0</div><div class="label">UP (Mbps)</div></div>
+                </div>
+
+                <button class="btn btn-primary" id="startBtn" onclick="runTest()" disabled>ESPERANDO RED...</button>
+
+                <div id="ratingBox" class="rating-box">
+                    <div class="label" style="text-align: center; margin-bottom: 4px;">Evalúa tu conexión actual</div>
+                    <div id="lockedIspName" class="locked-isp">Buscando ISP...</div>
+                    <div class="stars-input" id="starRating">
+                        <span onclick="setStars(1)">☆</span><span onclick="setStars(2)">☆</span><span onclick="setStars(3)">☆</span><span onclick="setStars(4)">☆</span><span onclick="setStars(5)">☆</span>
+                    </div>
+                    <button class="btn" onclick="submitRating()" style="padding: 10px; font-size: 12px;">ENVIAR CALIFICACIÓN</button>
+                </div>
+            </div>
+
+            <div class="card" style="padding-bottom: 12px;">
+                <div class="title">Ranking Latam</div>
+                <select id="countrySelect" onchange="showRanking()">
+                    <option value="">País...</option>
+                </select>
+                <div class="scroll-list" id="rankingList"></div>
+
+                <div class="title" style="margin-top: 16px; color: var(--accent);">Server Status</div>
+                <div class="scroll-list" id="serverStatusList"></div>
+            </div>
+        </div>
+
+        <div class="ad-banner" id="adSlot">
+            <span>Banner AdSense (728x90)</span>
         </div>
     </div>
 
-    <div class="card col-center">
-        <div class="title">Network Auditor</div>
-        <div id="ispLabel" style="font-size: 11px; color: var(--text-dim); margin-bottom: 4px; text-align: center;">Detectando ubicación...</div>
-        
-        <div class="metrics-row">
-            <div class="metric-block">
-                <div class="main-val" id="pingDisplay">0</div>
-                <div class="label">PING (MS)</div>
-            </div>
-            <div class="metric-block">
-                <div class="main-val" id="lossDisplay" style="color: var(--text-dim);">0%</div>
-                <div class="label">PACKET LOSS</div>
-            </div>
-        </div>
-        
-        <div class="chart-box"><canvas id="chart"></canvas></div>
-
-        <div class="speed-grid">
-            <div class="speed-item"><div class="speed-num" id="downDisplay">0.0</div><div class="label">DOWN (Mbps)</div></div>
-            <div class="speed-item"><div class="speed-num" id="upDisplay">0.0</div><div class="label">UP (Mbps)</div></div>
-        </div>
-
-        <button class="btn btn-primary" id="startBtn" onclick="runTest()" disabled>ESPERANDO RED...</button>
-
-        <div id="ratingBox" class="rating-box">
-            <div class="label" style="text-align: center; margin-bottom: 4px;">Evalúa tu conexión actual</div>
-            <div id="lockedIspName" class="locked-isp">Buscando ISP...</div>
-            <div class="stars-input" id="starRating">
-                <span onclick="setStars(1)">☆</span><span onclick="setStars(2)">☆</span><span onclick="setStars(3)">☆</span><span onclick="setStars(4)">☆</span><span onclick="setStars(5)">☆</span>
-            </div>
-            <button class="btn" onclick="submitRating()" style="padding: 10px; font-size: 12px;">ENVIAR CALIFICACIÓN</button>
-        </div>
-    </div>
-
-    <div class="card" style="padding-bottom: 12px;">
-        <div class="title">Ranking Latam</div>
-        <select id="countrySelect" onchange="showRanking()">
-            <option value="">País...</option>
-        </select>
-        <div class="scroll-list" id="rankingList"></div>
-
-        <div class="title" style="margin-top: 16px; color: var(--accent);">Server Status</div>
-        <div class="scroll-list" id="serverStatusList"></div>
+    <div class="ad-skyscraper">
+        Ad Slot (160x600)
     </div>
 </div>
-
-<div class="ad-banner" id="adSlot">
-    <span>Espacio Publicitario - Inserta tu código de AdSense aquí</span>
-    </div>
 
 <script>
     const fullData = {
