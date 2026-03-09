@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Network Auditor Pro | Fixed Layout</title>
+    <title>Network Auditor Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -13,66 +13,84 @@
         
         * { box-sizing: border-box; }
 
+        /* Bloqueo total del Body para que no haya scroll */
         body { 
             background: var(--bg); color: var(--text); 
-            font-family: 'Segoe UI', sans-serif; margin: 0; 
-            padding: 20px; display: flex; justify-content: center; 
-            height: 100vh; overflow: hidden; /* Evita que la página entera scrollee */
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            height: 100vh; 
+            overflow: hidden; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
         }
         
+        /* Contenedor principal con altura máxima estricta */
         .container { 
             display: grid; 
             grid-template-columns: 1fr 1.5fr 1fr; 
             gap: 20px; 
             width: 100%; 
             max-width: 1400px;
-            height: 90vh; /* Altura fija para el contenedor */
+            height: 90vh;
+            padding: 20px;
         }
 
+        /* Tarjetas con flexbox restringido */
         .card { 
             background: var(--card); 
             border-radius: 20px; 
-            padding: 25px; 
+            padding: 20px; 
             border: 1px solid var(--border); 
             display: flex; 
             flex-direction: column;
-            height: 100%; /* Las tres cartas miden lo mismo */
-            overflow: hidden; /* Evita que el contenido las estire */
+            height: 100%; 
+            overflow: hidden; 
         }
 
         .col-center { border: 2px solid var(--blue); box-shadow: 0 0 15px rgba(0, 209, 255, 0.1); }
         
-        .title { font-size: 11px; font-weight: bold; letter-spacing: 2px; color: var(--dim); margin-bottom: 20px; text-transform: uppercase; text-align: center; }
-        .main-val { font-size: clamp(40px, 5vw, 80px); font-weight: bold; line-height: 1; margin: 10px 0; text-align: center; }
+        .title { font-size: 11px; font-weight: bold; letter-spacing: 2px; color: var(--dim); margin-bottom: 15px; text-transform: uppercase; text-align: center; flex-shrink: 0; }
+        .main-val { font-size: 60px; font-weight: bold; line-height: 1; margin: 5px 0; text-align: center; flex-shrink: 0; }
         
-        .speed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
-        .speed-item { text-align: center; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; border: 1px solid #222; }
-        .speed-num { font-size: 28px; font-weight: bold; color: var(--blue); }
-        .label { font-size: 9px; color: var(--dim); font-weight: bold; text-transform: uppercase; }
+        /* ENVOLTORIO CLAVE PARA EVITAR EL BUG DEL GRÁFICO */
+        .chart-wrapper {
+            position: relative;
+            flex-grow: 1;
+            min-height: 0; /* Obliga al flexbox a no estirarse */
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .speed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; flex-shrink: 0; }
+        .speed-item { text-align: center; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 12px; border: 1px solid #222; }
+        .speed-num { font-size: 24px; font-weight: bold; color: var(--blue); }
+        .label { font-size: 9px; color: var(--dim); font-weight: bold; text-transform: uppercase; text-align: center; flex-shrink: 0; }
         
-        select, input { background: #1A1A1E; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 15px; }
+        select, input { background: #1A1A1E; color: white; border: 1px solid var(--border); padding: 10px; border-radius: 8px; width: 100%; margin-bottom: 10px; flex-shrink: 0; }
         
-        .btn { background: var(--blue); color: black; border: none; border-radius: 10px; padding: 18px; font-weight: bold; width: 100%; cursor: pointer; }
+        .btn { background: var(--blue); color: black; border: none; border-radius: 10px; padding: 15px; font-weight: bold; width: 100%; cursor: pointer; flex-shrink: 0; }
         
-        /* Contenedor del Ranking con Scroll interno */
+        /* Contenedor del Ranking con scroll interno restringido */
         .ranking-list { 
             overflow-y: auto; 
             flex-grow: 1; 
+            min-height: 0; /* Obliga al flexbox a no estirarse */
             padding-right: 5px; 
         }
         .ranking-list::-webkit-scrollbar { width: 5px; }
         .ranking-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
-        .ranking-item { background: #1A1A1E; padding: 12px; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid var(--blue); }
+        .ranking-item { background: #1A1A1E; padding: 10px; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid var(--blue); }
 
-        canvas { max-height: 120px !important; margin: 10px 0; }
-
-        .rating-box { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+        .rating-box { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); flex-shrink: 0; display: none; }
         .stars-input { color: #FFD700; font-size: 20px; cursor: pointer; display: flex; justify-content: center; gap: 5px; margin-bottom: 5px; }
 
         @media (max-width: 1000px) { 
-            body { overflow: auto; height: auto; }
+            body { overflow: auto; height: auto; display: block; }
             .container { grid-template-columns: 1fr; height: auto; } 
+            .card { min-height: 500px; height: auto; }
+            .chart-wrapper { min-height: 150px; }
         }
     </style>
 </head>
@@ -90,17 +108,19 @@
             <option value="15">Minecraft Local</option>
         </select>
         <div class="main-val" id="gameDisplay" style="color: var(--green);">--</div>
-        <div class="label" style="text-align: center;">MS ESTIMADO</div>
+        <div class="label">MS ESTIMADO</div>
         <div id="gameScore" style="margin-top: 20px; font-weight: bold; text-align: center; color: var(--dim);">SCORE: --</div>
     </div>
 
     <div class="card col-center">
         <div class="title">Network Health</div>
-        <div id="ispLabel" style="font-size: 11px; color: var(--blue); margin-bottom: 5px;">Detectando ISP...</div>
+        <div id="ispLabel" style="font-size: 11px; color: var(--blue); margin-bottom: 5px; text-align: center;">Detectando ISP...</div>
         <div class="main-val" id="pingDisplay">0</div>
         <div class="label">PING LOCAL (MS)</div>
         
-        <canvas id="chart"></canvas>
+        <div class="chart-wrapper">
+            <canvas id="chart"></canvas>
+        </div>
 
         <div class="speed-grid">
             <div class="speed-item"><div class="speed-num" id="downDisplay">0.0</div><div class="label">DOWN</div></div>
@@ -109,7 +129,7 @@
 
         <button class="btn" id="startBtn" onclick="runTest()">INICIAR ESCANEO</button>
 
-        <div id="ratingBox" class="rating-box" style="display:none;">
+        <div id="ratingBox" class="rating-box">
             <div class="stars-input" id="starRating">
                 <span onclick="setStars(1)">☆</span><span onclick="setStars(2)">☆</span><span onclick="setStars(3)">☆</span><span onclick="setStars(4)">☆</span><span onclick="setStars(5)">☆</span>
             </div>
@@ -122,8 +142,7 @@
         <select id="countrySelect" onchange="showRanking()">
             <option value="">País...</option>
         </select>
-        <div class="ranking-list" id="rankingList">
-            </div>
+        <div class="ranking-list" id="rankingList"></div>
     </div>
 </div>
 
@@ -149,7 +168,7 @@
         const ctx = document.getElementById('chart').getContext('2d');
         chart = new Chart(ctx, {
             type: 'line',
-            data: { labels: Array(15).fill(''), datasets: [{ data: [], borderColor: '#00D1FF', tension: 0.4, borderWeight: 2, pointRadius: 0, fill: true, backgroundColor: 'rgba(0,209,255,0.05)' }] },
+            data: { labels: Array(15).fill(''), datasets: [{ data: [], borderColor: '#00D1FF', tension: 0.4, borderWidth: 2, pointRadius: 0, fill: true, backgroundColor: 'rgba(0,209,255,0.05)' }] },
             options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
         });
     }
@@ -181,7 +200,6 @@
         const btn = document.getElementById('startBtn');
         btn.disabled = true; btn.innerText = "ESCANEO...";
         
-        // Ping Loop
         for(let i=0; i<10; i++) {
             const s = performance.now();
             try {
@@ -195,7 +213,6 @@
             await new Promise(r => setTimeout(r, 100));
         }
 
-        // Descarga Real
         const start = performance.now();
         try {
             const resp = await fetch("https://speed.cloudflare.com/__down?bytes=20000000", { cache: 'no-cache' });
