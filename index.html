@@ -193,7 +193,6 @@
         });
     }
 
-    // --- NUEVO SISTEMA DE DETECCIÓN Y FILTRADO GEOGRÁFICO ---
     async function initNetworkData() {
         const btn = document.getElementById('startBtn');
         try {
@@ -201,21 +200,19 @@
             const d = await r.json();
             
             currentISP = d.org || d.isp;
-            currentCountryCode = d.country_code; // Ej: 'AR', 'BR', 'MX', 'US'
+            currentCountryCode = d.country_code; 
 
-            // Mostrar ISP en la interfaz y bloquearlo en la calificación
             document.getElementById('ispLabel').innerText = `${currentISP} (${d.city}, ${d.country})`;
             document.getElementById('lockedIspName').innerText = currentISP;
             
-            // Llenar servidores de juego según la región
             populateGameServers(currentCountryCode);
             
             btn.disabled = false;
             btn.innerText = "INICIAR ESCANEO MAX";
         } catch(e) { 
-            document.getElementById('ispLabel').innerText = "ISP no detectado (VPN/AdBlocker activo)"; 
+            document.getElementById('ispLabel').innerText = "ISP no detectado"; 
             document.getElementById('lockedIspName').innerText = "ISP Desconocido";
-            populateGameServers('US'); // Fallback a servidores globales si falla
+            populateGameServers('US'); 
             btn.disabled = false;
             btn.innerText = "INICIAR ESCANEO MAX";
         }
@@ -225,30 +222,20 @@
         const select = document.getElementById('gameSelect');
         select.innerHTML = '<option value="">Seleccionar Servidor...</option>';
         
-        // Países de LATAM Sur y Brasil
         const latamSouth = ['AR', 'CL', 'UY', 'PY', 'BO', 'PE', 'BR'];
         
         if (latamSouth.includes(countryCode)) {
             select.innerHTML += `
                 <option value="https://dynamodb.sa-east-1.amazonaws.com/">CS2 / Valorant (São Paulo)</option>
-                <option value="https://www.nic.cl/">LoL / Valorant (Santiago)</option>
+                <option value="https://la2.api.riotgames.com/">LoL / Valorant (Riot LAS)</option>
                 <option value="https://dynamodb.us-east-1.amazonaws.com/">Rust (Oficial Miami)</option>
                 <option value="https://www.nic.ar/">Nacional (Minecraft / Local)</option>
             `;
-        } else if (countryCode === 'MX' || countryCode === 'CO' || countryCode === 'VE' || countryCode === 'EC') {
-            // LATAM Norte conecta mejor a Miami/Texas
-            select.innerHTML += `
-                <option value="https://dynamodb.us-east-1.amazonaws.com/">CS2 / LoL (Miami/US-East)</option>
-                <option value="https://dynamodb.us-west-1.amazonaws.com/">Valorant (US-West)</option>
-                <option value="https://dynamodb.sa-east-1.amazonaws.com/">Rust (São Paulo)</option>
-            `;
         } else {
-            // Global / Norteamérica / Europa
             select.innerHTML += `
                 <option value="https://dynamodb.us-east-1.amazonaws.com/">US East (N. Virginia)</option>
                 <option value="https://dynamodb.us-west-1.amazonaws.com/">US West (N. California)</option>
-                <option value="https://dynamodb.eu-central-1.amazonaws.com/">EU Central (Frankfurt)</option>
-                <option value="https://dynamodb.ap-northeast-1.amazonaws.com/">Asia (Tokyo)</option>
+                <option value="https://la2.api.riotgames.com/">LoL (Riot LAS)</option>
             `;
         }
     }
@@ -280,19 +267,20 @@
         scoreDisplay.innerText = "Midiendo RTT...";
 
         try {
-            const cacheBuster = `?t=${Date.now()}`;
-            await fetch(url + cacheBuster, { mode: 'no-cors', cache: 'no-store' }); 
+            // WARM-UP: Hacemos una petición sucia para limpiar el handshake TLS
+            await fetch(url, { mode: 'no-cors', cache: 'no-store' }); 
 
+            // Medición limpia sin alterar la URL para no romper el Keep-Alive
             let lowestPing = 999;
             for(let i=0; i<4; i++) {
                 const s = performance.now();
-                await fetch(url + `?t=${Date.now() + i}`, { mode: 'no-cors', cache: 'no-store' });
+                await fetch(url, { mode: 'no-cors', cache: 'no-store' });
                 const lat = Math.floor(performance.now() - s);
-                if(lat < lowestPing) lowestPing = lat;
+                if(lat > 2 && lat < lowestPing) lowestPing = lat; // Ignoramos pings de 0ms (Caché local)
                 await new Promise(r => setTimeout(r, 50)); 
             }
 
-            if(lowestPing === 999 || lowestPing === 0) throw new Error("Bloqueado");
+            if(lowestPing === 999) throw new Error("Bloqueado");
 
             display.innerText = lowestPing;
             
@@ -368,7 +356,7 @@
 
     window.onload = () => {
         initChart(); 
-        initNetworkData(); // Carga IP, bloquea ISP y filtra servidores
+        initNetworkData();
         const select = document.getElementById('countrySelect');
         Object.keys(fullData).sort().forEach(c => {
             let opt = document.createElement("option"); opt.value = c; opt.innerText = c;
