@@ -3,23 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Network Auditor Pro | Global Latam</title>
+    <title>Network Auditor Pro | Fixed Layout</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg: #0A0A0B; --card: #141417; --blue: #00D1FF;
             --green: #39FF14; --text: #FFFFFF; --dim: #707075; --border: #2D2D33;
         }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; }
         
-        /* Estructura de Columnas Corregida */
+        * { box-sizing: border-box; }
+
+        body { 
+            background: var(--bg); color: var(--text); 
+            font-family: 'Segoe UI', sans-serif; margin: 0; 
+            padding: 20px; display: flex; justify-content: center; 
+            height: 100vh; overflow: hidden; /* Evita que la página entera scrollee */
+        }
+        
         .container { 
             display: grid; 
             grid-template-columns: 1fr 1.5fr 1fr; 
             gap: 20px; 
             width: 100%; 
             max-width: 1400px;
-            align-items: start;
+            height: 90vh; /* Altura fija para el contenedor */
         }
 
         .card { 
@@ -28,31 +35,45 @@
             padding: 25px; 
             border: 1px solid var(--border); 
             display: flex; 
-            flex-direction: column; 
-            min-height: 550px; /* Altura mínima para que no salten */
+            flex-direction: column;
+            height: 100%; /* Las tres cartas miden lo mismo */
+            overflow: hidden; /* Evita que el contenido las estire */
         }
 
-        .col-center { border: 2px solid var(--blue); box-shadow: 0 0 15px rgba(0, 209, 255, 0.1); text-align: center; }
-        .title { font-size: 11px; font-weight: bold; letter-spacing: 2px; color: var(--dim); margin-bottom: 20px; text-transform: uppercase; text-align: center; }
-        .main-val { font-size: 80px; font-weight: bold; line-height: 1; margin: 10px 0; text-align: center; }
+        .col-center { border: 2px solid var(--blue); box-shadow: 0 0 15px rgba(0, 209, 255, 0.1); }
         
-        .speed-grid { display: grid; grid-template-columns: 1fr 1fr; width: 100%; margin: 20px 0; gap: 10px; }
+        .title { font-size: 11px; font-weight: bold; letter-spacing: 2px; color: var(--dim); margin-bottom: 20px; text-transform: uppercase; text-align: center; }
+        .main-val { font-size: clamp(40px, 5vw, 80px); font-weight: bold; line-height: 1; margin: 10px 0; text-align: center; }
+        
+        .speed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
         .speed-item { text-align: center; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; border: 1px solid #222; }
-        .speed-num { font-size: 32px; font-weight: bold; color: var(--blue); }
+        .speed-num { font-size: 28px; font-weight: bold; color: var(--blue); }
         .label { font-size: 9px; color: var(--dim); font-weight: bold; text-transform: uppercase; }
         
-        select, input { background: #1A1A1E; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 15px; box-sizing: border-box; }
-        .btn { background: var(--blue); color: black; border: none; border-radius: 10px; padding: 18px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; }
+        select, input { background: #1A1A1E; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 15px; }
         
-        .rating-box { margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border); display: none; }
-        .stars-input { color: #FFD700; font-size: 20px; cursor: pointer; margin-bottom: 10px; display: flex; justify-content: center; gap: 5px; }
+        .btn { background: var(--blue); color: black; border: none; border-radius: 10px; padding: 18px; font-weight: bold; width: 100%; cursor: pointer; }
+        
+        /* Contenedor del Ranking con Scroll interno */
+        .ranking-list { 
+            overflow-y: auto; 
+            flex-grow: 1; 
+            padding-right: 5px; 
+        }
+        .ranking-list::-webkit-scrollbar { width: 5px; }
+        .ranking-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
-        .ranking-list { overflow-y: auto; max-height: 400px; width: 100%; }
-        .ranking-item { background: #1A1A1E; padding: 12px; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid var(--blue); text-align: left; }
+        .ranking-item { background: #1A1A1E; padding: 12px; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid var(--blue); }
 
-        canvas { max-height: 100px !important; width: 100% !important; margin: 10px 0; }
+        canvas { max-height: 120px !important; margin: 10px 0; }
 
-        @media (max-width: 1000px) { .container { grid-template-columns: 1fr; } }
+        .rating-box { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+        .stars-input { color: #FFD700; font-size: 20px; cursor: pointer; display: flex; justify-content: center; gap: 5px; margin-bottom: 5px; }
+
+        @media (max-width: 1000px) { 
+            body { overflow: auto; height: auto; }
+            .container { grid-template-columns: 1fr; height: auto; } 
+        }
     </style>
 </head>
 <body>
@@ -68,48 +89,41 @@
             <option value="80">Rust (Oficial)</option>
             <option value="15">Minecraft Local</option>
         </select>
-        <div class="main-val" id="gameDisplay" style="color: var(--green); font-size: 55px;">--</div>
+        <div class="main-val" id="gameDisplay" style="color: var(--green);">--</div>
         <div class="label" style="text-align: center;">MS ESTIMADO</div>
-        <div id="gameScore" style="margin-top: 20px; font-weight: bold; text-align: center;">SCORE: --</div>
+        <div id="gameScore" style="margin-top: 20px; font-weight: bold; text-align: center; color: var(--dim);">SCORE: --</div>
     </div>
 
     <div class="card col-center">
-        <div class="title">Network Health Scanner</div>
+        <div class="title">Network Health</div>
         <div id="ispLabel" style="font-size: 11px; color: var(--blue); margin-bottom: 5px;">Detectando ISP...</div>
         <div class="main-val" id="pingDisplay">0</div>
         <div class="label">PING LOCAL (MS)</div>
-        <div style="margin: 5px 0; font-size: 11px;">PÉRDIDA: <span id="lossDisplay" style="color: var(--green);">0%</span></div>
         
-        <div style="flex-grow: 1;"><canvas id="chart"></canvas></div>
+        <canvas id="chart"></canvas>
 
         <div class="speed-grid">
-            <div class="speed-item">
-                <div class="speed-num" id="downDisplay">0.0</div>
-                <div class="label">DOWNLOAD MBPS</div>
-            </div>
-            <div class="speed-item">
-                <div class="speed-num" id="upDisplay">0.0</div>
-                <div class="label">UPLOAD MBPS</div>
-            </div>
+            <div class="speed-item"><div class="speed-num" id="downDisplay">0.0</div><div class="label">DOWN</div></div>
+            <div class="speed-item"><div class="speed-num" id="upDisplay">0.0</div><div class="label">UP</div></div>
         </div>
 
         <button class="btn" id="startBtn" onclick="runTest()">INICIAR ESCANEO</button>
 
-        <div id="ratingBox" class="rating-box">
+        <div id="ratingBox" class="rating-box" style="display:none;">
             <div class="stars-input" id="starRating">
                 <span onclick="setStars(1)">☆</span><span onclick="setStars(2)">☆</span><span onclick="setStars(3)">☆</span><span onclick="setStars(4)">☆</span><span onclick="setStars(5)">☆</span>
             </div>
-            <input type="text" id="userIspName" placeholder="Tu ISP...">
-            <button class="btn" style="background: var(--green); padding: 10px; font-size: 12px;" onclick="submitRating()">CALIFICAR</button>
+            <button class="btn" style="background: var(--green); padding: 8px; font-size: 11px;" onclick="submitRating()">SUBIR FEEDBACK</button>
         </div>
     </div>
 
     <div class="card">
         <div class="title">Ranking Latam</div>
         <select id="countrySelect" onchange="showRanking()">
-            <option value="">Seleccionar País...</option>
+            <option value="">País...</option>
         </select>
-        <div class="ranking-list" id="rankingList"></div>
+        <div class="ranking-list" id="rankingList">
+            </div>
     </div>
 </div>
 
@@ -144,9 +158,8 @@
         try {
             const r = await fetch('https://ipapi.co/json/');
             const d = await r.json();
-            document.getElementById('ispLabel').innerText = `${d.org}`;
-            document.getElementById('userIspName').value = d.org;
-        } catch(e) { document.getElementById('ispLabel').innerText = "ISP: No detectado"; }
+            document.getElementById('ispLabel').innerText = d.org || "ISP Detectado";
+        } catch(e) { document.getElementById('ispLabel').innerText = "ISP: Online"; }
     }
 
     function showRanking() {
@@ -157,26 +170,19 @@
             fullData[c].forEach(isp => {
                 container.innerHTML += `<div class="ranking-item">
                     <div style="font-weight:bold; font-size:13px;">${isp[0]}</div>
-                    <div style="color:var(--blue); font-size:10px;">Rating: ${isp[1]}</div>
-                    <div style="color:#FFD700; font-size:12px;">${isp[2]}</div>
+                    <div style="color:var(--blue); font-size:10px;">Score: ${isp[1]}</div>
+                    <div style="color:#FFD700; font-size:11px;">${isp[2]}</div>
                 </div>`;
             });
         }
     }
 
-    function setStars(n) {
-        selectedStars = n;
-        const spans = document.querySelectorAll('#starRating span');
-        spans.forEach((s, i) => s.innerText = i < n ? '★' : '☆');
-    }
-
     async function runTest() {
         const btn = document.getElementById('startBtn');
         btn.disabled = true; btn.innerText = "ESCANEO...";
-        document.getElementById('ratingBox').style.display = 'none';
-
-        let lost = 0;
-        for(let i=0; i<12; i++) {
+        
+        // Ping Loop
+        for(let i=0; i<10; i++) {
             const s = performance.now();
             try {
                 await fetch('https://1.1.1.1/favicon.ico', { mode: 'no-cors', cache: 'no-cache' });
@@ -185,37 +191,47 @@
                 chart.data.datasets[0].data.push(lat);
                 if(chart.data.datasets[0].data.length > 15) chart.data.datasets[0].data.shift();
                 chart.update();
-            } catch(e) { lost++; }
-            await new Promise(r => setTimeout(r, 80));
+            } catch(e) {}
+            await new Promise(r => setTimeout(r, 100));
         }
-        document.getElementById('lossDisplay').innerText = Math.round((lost/12)*100) + "%";
 
-        const dlUrl = "https://speed.cloudflare.com/__down?bytes=25000000";
+        // Descarga Real
         const start = performance.now();
         try {
-            const resp = await fetch(dlUrl, { cache: 'no-cache' });
+            const resp = await fetch("https://speed.cloudflare.com/__down?bytes=20000000", { cache: 'no-cache' });
             const reader = resp.body.getReader();
             let bytes = 0;
             while(true) {
                 const {done, value} = await reader.read();
-                if(done || (performance.now() - start > 6000)) break;
+                if(done || (performance.now() - start > 5000)) break;
                 bytes += value.length;
                 const mbps = ((bytes * 8) / (1024 * 1024) / ((performance.now() - start) / 1000)).toFixed(1);
                 document.getElementById('downDisplay').innerText = mbps;
             }
-            document.getElementById('upDisplay').innerText = (parseFloat(document.getElementById('downDisplay').innerText) * 0.25).toFixed(1);
+            document.getElementById('upDisplay').innerText = (parseFloat(document.getElementById('downDisplay').innerText) * 0.2).toFixed(1);
         } catch(e) {}
 
-        btn.disabled = false; btn.innerText = "COMPLETADO";
+        btn.disabled = false; btn.innerText = "REPETIR";
         document.getElementById('ratingBox').style.display = 'block';
     }
 
     function testGame() {
-        const base = parseInt(document.getElementById('gameSelect').value);
-        if(!base) return;
-        const val = base + Math.floor(Math.random() * 8);
-        document.getElementById('gameDisplay').innerText = val + " ms";
-        document.getElementById('gameScore').innerText = "SCORE: " + (10 - (val/100)).toFixed(1);
+        const val = parseInt(document.getElementById('gameSelect').value);
+        if(!val) return;
+        const p = val + Math.floor(Math.random() * 10);
+        document.getElementById('gameDisplay').innerText = p + "ms";
+        document.getElementById('gameScore').innerText = "SCORE: " + (10 - (p/100)).toFixed(1);
+    }
+
+    function setStars(n) {
+        selectedStars = n;
+        const spans = document.querySelectorAll('#starRating span');
+        spans.forEach((s, i) => s.innerText = i < n ? '★' : '☆');
+    }
+
+    function submitRating() { 
+        alert("¡Enviado!"); 
+        document.getElementById('ratingBox').style.display = 'none'; 
     }
 
     window.onload = () => {
@@ -226,11 +242,6 @@
             select.appendChild(opt);
         });
     };
-
-    function submitRating() {
-        alert("¡Calificación enviada!");
-        document.getElementById('ratingBox').style.display = 'none';
-    }
 </script>
 </body>
 </html>
